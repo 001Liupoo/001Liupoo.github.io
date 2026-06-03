@@ -9,55 +9,101 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🐕 小狗日记</h1>
-            <p id="currentDate"></p>
-        </header>
-
-        <!-- 搜索和筛选栏 -->
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="🔍 搜索饮食、作息、健康...">
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">全部</button>
-                <button class="filter-btn" data-filter="饮食">🍖 饮食</button>
-                <button class="filter-btn" data-filter="作息">🏃 作息</button>
-                <button class="filter-btn" data-filter="健康">💊 健康</button>
-            </div>
-        </div>
-
-        <!-- 快捷添加区域 -->
-        <div class="quick-add">
-            <h3>📝 快速记录</h3>
-            <div class="add-buttons">
-                <button onclick="openAddModal('饮食')">🍖 饮食</button>
-                <button onclick="openAddModal('作息')">🏃 作息</button>
-                <button onclick="openAddModal('健康')">💊 健康</button>
-                <button onclick="openAddModal('便便')">💩 便便</button>
-            </div>
-        </div>
-
-        <!-- 今日提示卡片 -->
-        <div class="tip-card" id="tipCard">
-            <div class="tip-icon">💡</div>
-            <div class="tip-content">
-                <strong>今日养狗小贴士</strong>
-                <p id="dailyTip">加载中...</p>
-            </div>
-            <button class="refresh-tip" onclick="refreshTip()">换一条</button>
-        </div>
-
-        <!-- 记录列表 -->
-        <div class="records-header">
-            <h3>📋 历史记录</h3>
-            <button class="export-btn" onclick="exportBackup()">📁 导出备份</button>
-        </div>
-        <div id="recordList" class="record-list">
-            <div class="empty-state">✨ 暂无记录，点击上方按钮添加第一条</div>
+    <!-- 密码锁界面 -->
+    <div id="lockScreen" class="lock-screen">
+        <div class="lock-box">
+            <div class="lock-icon">🐕</div>
+            <h2>小狗日记</h2>
+            <p>请输入访问密码</p>
+            <input type="password" id="passwordInput" placeholder="密码" autocomplete="off">
+            <button onclick="checkPassword()">解锁</button>
+            <div id="lockError" class="lock-error"></div>
         </div>
     </div>
 
-    <!-- 添加记录的弹窗 -->
+    <!-- 主界面 -->
+    <div id="mainApp" style="display: none;">
+        <div class="container">
+            <header>
+                <h1>🐕 小狗日记</h1>
+                <p id="currentDate"></p>
+            </header>
+
+            <!-- 统计看板（新增） -->
+            <div class="stats-dashboard" id="statsDashboard">
+                <div class="stat-card">
+                    <div class="stat-number" id="statTotal">0</div>
+                    <div class="stat-label">总记录</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statMonth">0</div>
+                    <div class="stat-label">本月</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statFood">0</div>
+                    <div class="stat-label">饮食</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statExercise">0</div>
+                    <div class="stat-label">作息</div>
+                </div>
+            </div>
+
+            <!-- 快捷入口 -->
+            <div class="quick-actions">
+                <button onclick="openAddModal('饮食')">🍖 饮食</button>
+                <button onclick="openAddModal('作息')">🏃 作息</button>
+                <button onclick="openAddModal('健康')">💊 健康</button>
+                <button onclick="openWeightModal()">⚖️ 体重</button>
+                <button onclick="openStoolModal()">💩 便便</button>
+                <button onclick="openPhotoModal()">📸 照片</button>
+            </div>
+
+            <!-- 疫苗提醒卡片 -->
+            <div class="vaccine-card" id="vaccineCard">
+                <div class="vaccine-header">💉 健康提醒</div>
+                <div id="vaccineContent">加载中...</div>
+            </div>
+
+            <!-- 体重追踪卡片 -->
+            <div class="weight-card">
+                <div class="weight-header">⚖️ 体重追踪 <button class="small-btn" onclick="openWeightModal()">+记录</button></div>
+                <div id="weightList" class="weight-list">暂无体重记录</div>
+            </div>
+
+            <!-- 养狗常识搜索（新增） -->
+            <div class="knowledge-card">
+                <div class="knowledge-header">📚 养狗常识库</div>
+                <div class="knowledge-search">
+                    <input type="text" id="knowledgeSearch" placeholder="搜索：疫苗、驱虫、训练、饮食...">
+                </div>
+                <div id="knowledgeResults" class="knowledge-results"></div>
+            </div>
+
+            <!-- 搜索和筛选栏 -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="🔍 搜索我的记录...">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="饮食">🍖 饮食</button>
+                    <button class="filter-btn" data-filter="作息">🏃 作息</button>
+                    <button class="filter-btn" data-filter="健康">💊 健康</button>
+                    <button class="filter-btn" data-filter="便便">💩 便便</button>
+                </div>
+            </div>
+
+            <!-- 记录列表 -->
+            <div class="records-header">
+                <h3>📋 历史记录</h3>
+                <button class="export-btn" onclick="exportBackup()">📁 导出备份</button>
+            </div>
+            <div id="recordList" class="record-list">
+                <div class="empty-state">✨ 暂无记录，点击上方按钮添加第一条</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用添加记录弹窗 -->
     <div id="addModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAddModal()">&times;</span>
@@ -65,14 +111,65 @@
             <form id="addForm">
                 <label>日期：</label>
                 <input type="date" id="recordDate" required>
-                
                 <label>内容：</label>
-                <textarea id="recordContent" rows="3" placeholder="例如：早餐吃了狗粮200g，食欲很好" required></textarea>
-                
-                <label>备注（可选）：</label>
-                <input type="text" id="recordNote" placeholder="如：便便正常 / 有点咳嗽">
-                
-                <button type="submit">💾 保存记录</button>
+                <textarea id="recordContent" rows="3" required></textarea>
+                <label>备注：</label>
+                <input type="text" id="recordNote" placeholder="可选">
+                <button type="submit">💾 保存</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 体重记录弹窗 -->
+    <div id="weightModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWeightModal()">&times;</span>
+            <h3>⚖️ 记录体重</h3>
+            <form id="weightForm">
+                <label>日期：</label>
+                <input type="date" id="weightDate" required>
+                <label>体重 (kg)：</label>
+                <input type="number" id="weightValue" step="0.1" required>
+                <button type="submit">💾 保存</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 便便记录弹窗 -->
+    <div id="stoolModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeStoolModal()">&times;</span>
+            <h3>💩 便便记录</h3>
+            <form id="stoolForm">
+                <label>日期：</label>
+                <input type="date" id="stoolDate" required>
+                <label>便便状态：</label>
+                <select id="stoolStatus" required>
+                    <option value="normal">✅ 正常（成型）</option>
+                    <option value="soft">⚠️ 软便</option>
+                    <option value="diarrhea">🚨 腹泻</option>
+                    <option value="dry">💧 偏干/硬</option>
+                </select>
+                <label>备注：</label>
+                <input type="text" id="stoolNote" placeholder="可选">
+                <button type="submit">💾 保存</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 照片上传弹窗 -->
+    <div id="photoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePhotoModal()">&times;</span>
+            <h3>📸 上传照片</h3>
+            <form id="photoForm">
+                <label>日期：</label>
+                <input type="date" id="photoDate" required>
+                <label>照片：</label>
+                <input type="file" id="photoFile" accept="image/*" capture="environment" required>
+                <label>描述：</label>
+                <input type="text" id="photoDesc" placeholder="例如：在草坪上奔跑">
+                <button type="submit">📸 上传</button>
             </form>
         </div>
     </div>

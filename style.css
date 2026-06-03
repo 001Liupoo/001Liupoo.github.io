@@ -1,0 +1,330 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #FFF5F5 0%, #FEE2E2 100%);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #333;
+    padding: 20px 0 40px 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+h1 {
+    font-size: 28px;
+    color: #E11D48;
+    margin-bottom: 8px;
+}
+
+#currentDate {
+    color: #9CA3AF;
+    font-size: 14px;
+}
+
+/* 搜索栏 */
+.search-bar {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+#searchInput {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #FCA5A5;
+    border-radius: 30px;
+    font-size: 16px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+#searchInput:focus {
+    border-color: #E11D48;
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 30px;
+    background: #F3F4F6;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn.active {
+    background: #E11D48;
+    color: white;
+}
+
+/* 快捷添加 */
+.quick-add {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.quick-add h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #4B5563;
+}
+
+.add-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.add-buttons button {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px;
+    border: none;
+    border-radius: 40px;
+    background: #FEF2F2;
+    color: #BE123C;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-buttons button:hover {
+    background: #FEE2E2;
+    transform: scale(0.98);
+}
+
+/* 提示卡片 */
+.tip-card {
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.tip-icon {
+    font-size: 32px;
+}
+
+.tip-content {
+    flex: 1;
+}
+
+.tip-content strong {
+    font-size: 14px;
+    color: #92400E;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.tip-content p {
+    font-size: 13px;
+    color: #78350F;
+    line-height: 1.4;
+}
+
+.refresh-tip {
+    background: rgba(255,255,255,0.5);
+    border: none;
+    border-radius: 30px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* 记录列表头部 */
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+}
+
+.export-btn {
+    background: none;
+    border: none;
+    color: #6B7280;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.record-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.record-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.1s;
+    border-left: 5px solid;
+}
+
+.record-card[data-type="饮食"] { border-left-color: #10B981; }
+.record-card[data-type="作息"] { border-left-color: #3B82F6; }
+.record-card[data-type="健康"] { border-left-color: #F59E0B; }
+.record-card[data-type="便便"] { border-left-color: #8B5CF6; }
+
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.record-type {
+    font-weight: bold;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.record-type.饮食 { background: #D1FAE5; color: #065F46; }
+.record-type.作息 { background: #DBEAFE; color: #1E40AF; }
+.record-type.健康 { background: #FEF3C7; color: #92400E; }
+.record-type.便便 { background: #EDE9FE; color: #5B21B6; }
+
+.record-date {
+    color: #9CA3AF;
+}
+
+.record-content {
+    font-size: 15px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.record-note {
+    font-size: 12px;
+    color: #6B7280;
+    background: #F9FAFB;
+    padding: 6px 10px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.delete-btn {
+    float: right;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #FCA5A5;
+    padding: 0 8px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #9CA3AF;
+    background: white;
+    border-radius: 20px;
+}
+
+/* 弹窗 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 24px;
+    padding: 24px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.modal-content label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.modal-content input, .modal-content textarea {
+    padding: 10px;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    font-family: inherit;
+}
+
+.modal-content button[type="submit"] {
+    background: #E11D48;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+/* 桌面适配 */
+@media (min-width: 768px) {
+    .container {
+        max-width: 800px;
+    }
+    
+    .record-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 16px;
+    }
+}

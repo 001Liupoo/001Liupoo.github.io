@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#F9A8D4">
+    <title>🐕 我的小狗日记</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐕 小狗日记</h1>
+            <p id="currentDate"></p>
+        </header>
+
+        <!-- 搜索和筛选栏 -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 搜索饮食、作息、健康...">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="饮食">🍖 饮食</button>
+                <button class="filter-btn" data-filter="作息">🏃 作息</button>
+                <button class="filter-btn" data-filter="健康">💊 健康</button>
+            </div>
+        </div>
+
+        <!-- 快捷添加区域 -->
+        <div class="quick-add">
+            <h3>📝 快速记录</h3>
+            <div class="add-buttons">
+                <button onclick="openAddModal('饮食')">🍖 饮食</button>
+                <button onclick="openAddModal('作息')">🏃 作息</button>
+                <button onclick="openAddModal('健康')">💊 健康</button>
+                <button onclick="openAddModal('便便')">💩 便便</button>
+            </div>
+        </div>
+
+        <!-- 今日提示卡片 -->
+        <div class="tip-card" id="tipCard">
+            <div class="tip-icon">💡</div>
+            <div class="tip-content">
+                <strong>今日养狗小贴士</strong>
+                <p id="dailyTip">加载中...</p>
+            </div>
+            <button class="refresh-tip" onclick="refreshTip()">换一条</button>
+        </div>
+
+        <!-- 记录列表 -->
+        <div class="records-header">
+            <h3>📋 历史记录</h3>
+            <button class="export-btn" onclick="exportBackup()">📁 导出备份</button>
+        </div>
+        <div id="recordList" class="record-list">
+            <div class="empty-state">✨ 暂无记录，点击上方按钮添加第一条</div>
+        </div>
+    </div>
+
+    <!-- 添加记录的弹窗 -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddModal()">&times;</span>
+            <h3 id="modalTitle">添加记录</h3>
+            <form id="addForm">
+                <label>日期：</label>
+                <input type="date" id="recordDate" required>
+                
+                <label>内容：</label>
+                <textarea id="recordContent" rows="3" placeholder="例如：早餐吃了狗粮200g，食欲很好" required></textarea>
+                
+                <label>备注（可选）：</label>
+                <input type="text" id="recordNote" placeholder="如：便便正常 / 有点咳嗽">
+                
+                <button type="submit">💾 保存记录</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

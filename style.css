@@ -116,7 +116,7 @@ body {
     padding: 6px;
 }
 
-/* Tab 导航栏 */
+/* Tab 导航 */
 .tab-bar {
     display: flex;
     background: white;
@@ -148,7 +148,7 @@ body {
     border-bottom: 2px solid #E11D48;
 }
 
-/* 内容区域 */
+/* 内容区 */
 .tab-content {
     display: none;
     padding: 16px;
@@ -163,10 +163,81 @@ body {
     margin: 0 auto;
 }
 
-/* ========== 通用卡片 ========== */
+/* ========== 首页样式 ========== */
+.welcome-card {
+    background: linear-gradient(135deg, #E11D48 0%, #BE123C 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 32px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(225,29,72,0.2);
+}
+
+.welcome-text h2 {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.welcome-text p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: white;
+    padding: 16px 8px;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #E11D48;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #6B7280;
+    margin-top: 4px;
+}
+
+.quick-entry {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.quick-btn-large {
+    background: white;
+    border: none;
+    padding: 12px 0;
+    border-radius: 48px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #E11D48;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-btn-large:active {
+    transform: scale(0.96);
+}
+
+/* 通用卡片 */
 .form-card, .records-card, .reminder-card, .timeline-card, 
 .calendar-card, .chart-card, .knowledge-card, .tips-card, 
-.info-card, .search-card {
+.info-card, .search-card, .milestone-card {
     background: white;
     border-radius: 24px;
     padding: 20px;
@@ -183,7 +254,7 @@ h3 {
     gap: 8px;
 }
 
-/* 表单样式 */
+/* 表单 */
 .form-row {
     display: flex;
     flex-wrap: wrap;
@@ -193,7 +264,7 @@ h3 {
 }
 
 .form-row label {
-    width: 80px;
+    width: 70px;
     font-size: 14px;
     color: #4B5563;
     font-weight: 500;
@@ -206,10 +277,6 @@ h3 {
     border-radius: 16px;
     font-size: 14px;
     font-family: inherit;
-}
-
-.form-row textarea {
-    resize: vertical;
 }
 
 .btn-primary {
@@ -252,37 +319,44 @@ h3 {
     margin-top: 12px;
 }
 
-/* 快速记录 */
-.quick-buttons {
+/* 搜索框 */
+.search-box {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
-.quick-btn {
+.search-box input {
     flex: 1;
-    min-width: 70px;
-    padding: 10px 0;
-    background: #FEF2F2;
-    border: none;
+    padding: 12px;
+    border: 1px solid #E5E7EB;
     border-radius: 40px;
     font-size: 14px;
-    font-weight: 500;
-    color: #BE123C;
-    cursor: pointer;
 }
 
-/* 当前日期 */
-.current-date {
-    text-align: center;
-    font-size: 18px;
-    font-weight: 600;
-    color: #E11D48;
-    margin-bottom: 20px;
+.search-box button {
+    padding: 8px 16px;
+    white-space: nowrap;
+    margin-top: 0;
+    width: auto;
+}
+
+.search-results {
+    margin-top: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    background: #F9FAFB;
+    padding: 12px;
+    border-radius: 16px;
+    margin-bottom: 8px;
+    font-size: 14px;
 }
 
 /* 时间线 */
-.timeline-list, .records-list {
+.timeline-list, .records-list, .reminder-list, .milestone-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -299,19 +373,30 @@ h3 {
     gap: 8px;
 }
 
-.timeline-time {
+.timeline-meal {
+    font-weight: 600;
+    color: #E11D48;
+    margin-bottom: 6px;
+}
+
+.timeline-detail {
+    font-size: 13px;
+    color: #4B5563;
+    margin-left: 8px;
+}
+
+.timeline-note {
     font-size: 12px;
-    color: #9CA3AF;
-    min-width: 60px;
+    color: #6B7280;
+    margin-top: 4px;
 }
 
-.timeline-content {
-    flex: 1;
-    font-size: 14px;
-}
-
-.timeline-icon {
-    font-size: 20px;
+.delete-mini {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #FCA5A5;
 }
 
 /* 提醒卡片 */
@@ -319,7 +404,6 @@ h3 {
     padding: 12px;
     background: #FEF3C7;
     border-radius: 16px;
-    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     font-size: 14px;
@@ -330,18 +414,25 @@ h3 {
     color: #DC2626;
 }
 
-/* 日历简表 */
+/* 日历 */
 .calendar-mini {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
+    gap: 6px;
     text-align: center;
 }
 
-.calendar-day {
-    padding: 8px;
+.calendar-weekday {
     font-size: 12px;
-    border-radius: 20px;
+    color: #9CA3AF;
+    padding: 6px;
+}
+
+.calendar-day {
+    padding: 8px 4px;
+    font-size: 13px;
+    border-radius: 30px;
+    background: #F9FAFB;
 }
 
 .calendar-day.has-record {
@@ -350,34 +441,22 @@ h3 {
     font-weight: bold;
 }
 
-/* 知识库表格 */
-.taboo-table {
-    width: 100%;
-    overflow-x: auto;
+/* 知识库 */
+.taboo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.taboo-row {
-    display: grid;
-    grid-template-columns: 1fr 0.8fr 2fr;
-    gap: 8px;
-    padding: 10px 0;
-    border-bottom: 1px solid #F3F4F6;
-    font-size: 12px;
-}
-
-.taboo-header {
-    font-weight: bold;
-    color: #4B5563;
+.taboo-item {
+    padding: 10px;
     background: #F9FAFB;
-    padding: 10px 0;
-    border-bottom: 1px solid #E5E7EB;
+    border-radius: 16px;
+    font-size: 13px;
 }
 
-/* 曲线图容器 */
-.chart-card canvas {
-    width: 100%;
-    height: auto;
-    max-height: 200px;
+.taboo-item strong {
+    color: #E11D48;
 }
 
 /* 空状态 */
@@ -420,28 +499,19 @@ h3 {
 }
 
 /* 响应式 */
-@media (min-width: 768px) {
-    .tab-btn {
-        font-size: 15px;
-    }
-    
-    .quick-buttons {
-        gap: 12px;
-    }
-}
-
 @media (max-width: 480px) {
     .form-row {
         flex-direction: column;
         align-items: stretch;
     }
-    
     .form-row label {
         width: auto;
     }
-    
-    .taboo-row {
-        grid-template-columns: 1fr;
-        gap: 4px;
+    .quick-entry {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .quick-btn-large {
+        font-size: 12px;
+        padding: 10px 0;
     }
 }

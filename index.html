@@ -44,14 +44,7 @@
         <!-- ==================== Tab 1：今日 ==================== -->
         <div id="tab-today" class="tab-content active">
             <div class="container">
-                <div class="welcome-card">
-                    <div class="welcome-text">
-                        <h2>🐕 欢迎回来！</h2>
-                        <p>今天也要好好记录小麦的成长哦～</p>
-                    </div>
-                </div>
-
-                <!-- 今日统计卡片：今日餐数、今日饮水量、今日便便数 -->
+                <!-- 今日统计卡片 -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-number" id="todayMeals">0</div>
@@ -63,7 +56,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-number" id="todayStoolCount">0</div>
-                        <div class="stat-label">今日便便数</div>
+                        <div class="stat-label">今日臭臭数</div>
                     </div>
                 </div>
 
@@ -72,8 +65,7 @@
                     <button class="quick-btn-large" onclick="openAddMealModal('午餐')">🍗 午餐</button>
                     <button class="quick-btn-large" onclick="openAddMealModal('晚餐')">🥣 晚餐</button>
                     <button class="quick-btn-large" onclick="openAddMealModal('加餐')">🍎 加餐</button>
-                    <!-- 饮水按钮已移除，饮水随餐次记录 -->
-                    <button class="quick-btn-large" onclick="openStoolModal()">💩 便便</button>
+                    <button class="quick-btn-large" onclick="openStoolModal()">💩 臭臭</button>
                     <button class="quick-btn-large" onclick="openAddSimpleModal('大事记')">📝 大事记</button>
                 </div>
 
@@ -94,7 +86,7 @@
             </div>
         </div>
 
-        <!-- ==================== Tab 2：饮食 ==================== -->
+        <!-- ==================== Tab 2：饮食（左右分栏） ==================== -->
         <div id="tab-diet" class="tab-content">
             <div class="container">
                 <div class="search-card">
@@ -107,59 +99,24 @@
                     <div id="dietSearchResults" class="search-results"></div>
                 </div>
 
-                <div class="form-card">
-                    <h3>➕ 添加餐次记录</h3>
-                    <form id="mealForm">
-                        <div class="form-row">
-                            <label>日期：</label>
-                            <input type="date" id="mealDate" required>
-                        </div>
-                        <div class="form-row">
-                            <label>餐次：</label>
-                            <select id="mealType">
-                                <option value="早餐">早餐</option>
-                                <option value="午餐">午餐</option>
-                                <option value="晚餐">晚餐</option>
-                                <option value="加餐">加餐</option>
-                            </select>
-                        </div>
-                        <div class="form-row">
-                            <label>时段：</label>
-                            <input type="time" id="mealTime" value="08:00">
-                        </div>
-                        <div class="form-row">
-                            <label>主食：</label>
-                            <input type="text" id="mainFood" placeholder="狗粮品牌">
-                            <input type="number" id="mainWeight" placeholder="克重(g)" style="width:100px">
-                        </div>
-                        <div class="form-row">
-                            <label>辅食：</label>
-                            <input type="text" id="sideFood" placeholder="鸡胸肉/蛋黄">
-                            <input type="number" id="sideWeight" placeholder="克重(g)" style="width:100px">
-                        </div>
-                        <div class="form-row">
-                            <label>饮水：</label>
-                            <input type="number" id="waterAmount" placeholder="饮水量(ml)">
-                        </div>
-                        <div class="form-row">
-                            <label>备注：</label>
-                            <input type="text" id="mealNote" placeholder="食欲、状态等">
-                        </div>
-                        <button type="submit" class="btn-primary">💾 保存餐次</button>
-                    </form>
+                <!-- 左右分栏布局 -->
+                <div class="split-layout">
+                    <!-- 左侧：饮食日历 -->
+                    <div class="calendar-card">
+                        <h3>📅 饮食日历</h3>
+                        <div id="dietCalendar" class="calendar-mini"></div>
+                    </div>
+
+                    <!-- 右侧：饮食小计 -->
+                    <div class="daily-summary-card" id="dailySummaryCard">
+                        <h3>📊 当日饮食小计</h3>
+                        <div id="dailySummaryContent">请点击左侧日期</div>
+                    </div>
                 </div>
 
-                <div class="calendar-card">
-                    <h3>📅 饮食日历</h3>
-                    <div id="dietCalendar" class="calendar-mini"></div>
-                </div>
-                <div class="daily-summary-card" id="dailySummaryCard" style="display:none;">
-                    <h3>📊 当日饮食小计</h3>
-                    <div id="dailySummaryContent"></div>
-                </div>
-
+                <!-- 饮食记录列表（只展示最近10条） -->
                 <div class="records-card">
-                    <h3>📋 饮食记录列表</h3>
+                    <h3>📋 最近饮食记录 <span style="font-size:12px;color:#9CA3AF;">(仅显示最近10条)</span></h3>
                     <div id="dietRecordsList" class="records-list"></div>
                 </div>
             </div>
@@ -168,7 +125,6 @@
         <!-- ==================== Tab 3：健康 ==================== -->
         <div id="tab-health" class="tab-content">
             <div class="container">
-                <!-- 医保信息放在最前面 -->
                 <div class="info-card">
                     <h3>🏥 医保信息</h3>
                     <div id="insuranceInfo" class="insurance-content"></div>
@@ -225,7 +181,7 @@
                 </div>
 
                 <div class="records-card">
-                    <h3>📋 历史健康记录</h3>
+                    <h3>📋 历史健康记录 <span style="font-size:12px;color:#9CA3AF;">(仅显示最近10条)</span></h3>
                     <div id="healthRecordsList" class="records-list"></div>
                 </div>
             </div>
@@ -258,7 +214,7 @@
                 </div>
 
                 <div class="milestone-card">
-                    <h3>❤️ 大事记专区</h3>
+                    <h3>❤️ 大事记专区 <span style="font-size:12px;color:#9CA3AF;">(仅显示最近10条)</span></h3>
                     <div id="allMilestones" class="milestone-list"></div>
                 </div>
 
@@ -273,7 +229,7 @@
                 </div>
 
                 <div class="records-card">
-                    <h3>📋 成长记录列表</h3>
+                    <h3>📋 成长记录列表 <span style="font-size:12px;color:#9CA3AF;">(仅显示最近10条)</span></h3>
                     <div id="growthRecordsList" class="records-list"></div>
                 </div>
             </div>
@@ -417,35 +373,39 @@
         </div>
     </div>
 
-    <!-- 便便记录弹窗 -->
+    <!-- 臭臭记录弹窗（尿尿/便便） -->
     <div id="stoolModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeStoolModal()">&times;</span>
-            <h3>💩 记录便便</h3>
+            <h3>💩 记录臭臭</h3>
             <form id="stoolForm">
                 <div class="form-row">
                     <label>日期：</label>
                     <input type="date" id="stoolDate" required>
                 </div>
                 <div class="form-row">
-                    <label>便便状态：</label>
-                    <select id="stoolStatus" required>
-                        <option value="正常">✅ 正常（成型）</option>
-                        <option value="软便">⚠️ 软便</option>
-                        <option value="腹泻">🚨 腹泻</option>
-                        <option value="偏干">💧 偏干/硬</option>
-                    </select>
+                    <label>时间：</label>
+                    <input type="time" id="stoolTime" value="12:00" required>
                 </div>
                 <div class="form-row">
-                    <label>备注：</label>
-                    <input type="text" id="stoolNote" placeholder="可选">
+                    <label>类别：</label>
+                    <select id="stoolType" required>
+                        <option value="尿尿">💧 尿尿</option>
+                        <option value="便便">💩 便便</option>
+                    </select>
+                </div>
+                <div class="form-row" id="stoolStatusRow">
+                    <label>状态：</label>
+                    <select id="stoolStatus" required>
+                        <!-- 动态填充 -->
+                    </select>
                 </div>
                 <button type="submit" class="btn-primary">💾 保存</button>
             </form>
         </div>
     </div>
 
-    <!-- 简单记录弹窗（大事记专用） -->
+    <!-- 大事记弹窗 -->
     <div id="simpleModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeSimpleModal()">&times;</span>

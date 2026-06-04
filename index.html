@@ -51,18 +51,19 @@
                     </div>
                 </div>
 
-                <div class="stats-grid" id="weekStats">
+                <!-- 今日统计卡片：今日餐数、今日饮水量、今日便便数 -->
+                <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-number" id="statMeals">0</div>
-                        <div class="stat-label">总餐数</div>
+                        <div class="stat-number" id="todayMeals">0</div>
+                        <div class="stat-label">今日餐数</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="statWater">0</div>
-                        <div class="stat-label">总饮水(ml)</div>
+                        <div class="stat-number" id="todayWater">0</div>
+                        <div class="stat-label">今日饮水量(ml)</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="statDays">0</div>
-                        <div class="stat-label">记录天数</div>
+                        <div class="stat-number" id="todayStoolCount">0</div>
+                        <div class="stat-label">今日便便数</div>
                     </div>
                 </div>
 
@@ -71,8 +72,8 @@
                     <button class="quick-btn-large" onclick="openAddMealModal('午餐')">🍗 午餐</button>
                     <button class="quick-btn-large" onclick="openAddMealModal('晚餐')">🥣 晚餐</button>
                     <button class="quick-btn-large" onclick="openAddMealModal('加餐')">🍎 加餐</button>
-                    <button class="quick-btn-large" onclick="openAddSimpleModal('饮水')">💧 饮水</button>
-                    <button class="quick-btn-large" onclick="openAddSimpleModal('便便')">💩 便便</button>
+                    <!-- 饮水按钮已移除，饮水随餐次记录 -->
+                    <button class="quick-btn-large" onclick="openStoolModal()">💩 便便</button>
                     <button class="quick-btn-large" onclick="openAddSimpleModal('大事记')">📝 大事记</button>
                 </div>
 
@@ -148,7 +149,6 @@
                     </form>
                 </div>
 
-                <!-- 饮食日历 + 右侧小计 -->
                 <div class="calendar-card">
                     <h3>📅 饮食日历</h3>
                     <div id="dietCalendar" class="calendar-mini"></div>
@@ -168,6 +168,12 @@
         <!-- ==================== Tab 3：健康 ==================== -->
         <div id="tab-health" class="tab-content">
             <div class="container">
+                <!-- 医保信息放在最前面 -->
+                <div class="info-card">
+                    <h3>🏥 医保信息</h3>
+                    <div id="insuranceInfo" class="insurance-content"></div>
+                </div>
+
                 <div class="form-card">
                     <h3>➕ 添加健康事件</h3>
                     <form id="healthForm">
@@ -221,11 +227,6 @@
                 <div class="records-card">
                     <h3>📋 历史健康记录</h3>
                     <div id="healthRecordsList" class="records-list"></div>
-                </div>
-
-                <div class="info-card">
-                    <h3>🏥 医保信息</h3>
-                    <div id="insuranceInfo" class="insurance-content"></div>
                 </div>
             </div>
         </div>
@@ -416,7 +417,35 @@
         </div>
     </div>
 
-    <!-- 简单记录弹窗 -->
+    <!-- 便便记录弹窗 -->
+    <div id="stoolModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeStoolModal()">&times;</span>
+            <h3>💩 记录便便</h3>
+            <form id="stoolForm">
+                <div class="form-row">
+                    <label>日期：</label>
+                    <input type="date" id="stoolDate" required>
+                </div>
+                <div class="form-row">
+                    <label>便便状态：</label>
+                    <select id="stoolStatus" required>
+                        <option value="正常">✅ 正常（成型）</option>
+                        <option value="软便">⚠️ 软便</option>
+                        <option value="腹泻">🚨 腹泻</option>
+                        <option value="偏干">💧 偏干/硬</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>备注：</label>
+                    <input type="text" id="stoolNote" placeholder="可选">
+                </div>
+                <button type="submit" class="btn-primary">💾 保存</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 简单记录弹窗（大事记专用） -->
     <div id="simpleModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeSimpleModal()">&times;</span>
@@ -429,7 +458,7 @@
                 </div>
                 <div class="form-row">
                     <label>内容：</label>
-                    <textarea id="simpleRecordContent" rows="2" required placeholder="例如：饮水 200ml / 便便正常 / 今天学会了握手"></textarea>
+                    <textarea id="simpleRecordContent" rows="2" required placeholder="例如：今天学会了握手"></textarea>
                 </div>
                 <div class="form-row">
                     <label>备注：</label>

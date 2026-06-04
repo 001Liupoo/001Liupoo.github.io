@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#E11D48">
+    <title>🐕 小麦成长日记</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js 用于绘制曲线图 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- 密码锁界面 -->
+    <div id="lockScreen" class="lock-screen">
+        <div class="lock-box">
+            <div class="lock-icon">🐕</div>
+            <h2>小麦成长日记</h2>
+            <p>请输入访问密码</p>
+            <input type="password" id="passwordInput" placeholder="密码" autocomplete="off">
+            <button onclick="checkPassword()">解锁</button>
+            <div id="lockError" class="lock-error"></div>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="mainApp" style="display: none;">
+        <!-- 顶部栏 -->
+        <div class="top-bar">
+            <h1>🐕 小麦成长日记</h1>
+            <div class="top-actions">
+                <button class="icon-btn" onclick="showLockScreen()" title="锁定">🔐</button>
+                <button class="icon-btn" onclick="exportBackup()" title="备份">📁</button>
+            </div>
+        </div>
+
+        <!-- Tab 导航栏 -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="today">🏠 今日</button>
+            <button class="tab-btn" data-tab="diet">🍖 饮食</button>
+            <button class="tab-btn" data-tab="health">💊 健康</button>
+            <button class="tab-btn" data-tab="growth">📈 成长</button>
+            <button class="tab-btn" data-tab="knowledge">📚 知识</button>
+            <button class="tab-btn" data-tab="settings">⚙️ 设置</button>
+        </div>
+
+        <!-- ==================== Tab 1：今日 ==================== -->
+        <div id="tab-today" class="tab-content active">
+            <div class="container">
+                <!-- 当前日期 -->
+                <div class="current-date" id="currentDateDisplay"></div>
+                
+                <!-- 快速记录区 -->
+                <div class="quick-actions">
+                    <h3>⚡ 快速记录</h3>
+                    <div class="quick-buttons">
+                        <button class="quick-btn" onclick="openRecordModal('主食')">🍖 主食</button>
+                        <button class="quick-btn" onclick="openRecordModal('辅食')">🍗 辅食</button>
+                        <button class="quick-btn" onclick="openRecordModal('饮水')">💧 饮水</button>
+                        <button class="quick-btn" onclick="openRecordModal('便便')">💩 便便</button>
+                        <button class="quick-btn" onclick="openRecordModal('大事记')">📝 大事记</button>
+                        <button class="quick-btn" onclick="openWeightModal()">⚖️ 体重</button>
+                    </div>
+                </div>
+
+                <!-- 今日提醒卡片 -->
+                <div class="reminder-card">
+                    <h3>🔔 今日提醒</h3>
+                    <div id="todayReminders"></div>
+                </div>
+
+                <!-- 今日时间线 -->
+                <div class="timeline-card">
+                    <h3>📋 今日时间线</h3>
+                    <div id="todayTimeline" class="timeline-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 2：饮食 ==================== -->
+        <div id="tab-diet" class="tab-content">
+            <div class="container">
+                <!-- 添加饮食记录表单 -->
+                <div class="form-card">
+                    <h3>➕ 添加饮食记录</h3>
+                    <form id="dietForm">
+                        <div class="form-row">
+                            <label>日期：</label>
+                            <input type="date" id="dietDate" required>
+                        </div>
+                        <div class="form-row">
+                            <label>时段：</label>
+                            <select id="dietTime">
+                                <option value="早餐">早餐</option>
+                                <option value="午餐">午餐</option>
+                                <option value="晚餐">晚餐</option>
+                                <option value="加餐">加餐</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>主食：</label>
+                            <input type="text" id="mainFood" placeholder="狗粮品牌/种类">
+                            <input type="number" id="mainFoodWeight" placeholder="克重(g)" style="width:100px">
+                        </div>
+                        <div class="form-row">
+                            <label>辅食：</label>
+                            <input type="text" id="sideFood" placeholder="鸡胸肉/蛋黄等">
+                            <input type="number" id="sideFoodWeight" placeholder="克重(g)" style="width:100px">
+                        </div>
+                        <div class="form-row">
+                            <label>饮水：</label>
+                            <input type="text" id="waterAmount" placeholder="饮水量(ml)">
+                        </div>
+                        <div class="form-row">
+                            <label>备注：</label>
+                            <input type="text" id="dietNote" placeholder="可选">
+                        </div>
+                        <button type="submit" class="btn-primary">💾 保存</button>
+                    </form>
+                </div>
+
+                <!-- 饮食日历简表 -->
+                <div class="calendar-card">
+                    <h3>📅 饮食日历</h3>
+                    <div id="dietCalendar" class="calendar-mini"></div>
+                </div>
+
+                <!-- 饮食记录列表 -->
+                <div class="records-card">
+                    <h3>📋 饮食记录列表</h3>
+                    <div id="dietRecordsList" class="records-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 3：健康 ==================== -->
+        <div id="tab-health" class="tab-content">
+            <div class="container">
+                <!-- 添加健康事件表单 -->
+                <div class="form-card">
+                    <h3>➕ 添加健康事件</h3>
+                    <form id="healthForm">
+                        <div class="form-row">
+                            <label>类型：</label>
+                            <select id="healthType">
+                                <option value="疫苗">💉 疫苗</option>
+                                <option value="驱虫">🪱 驱虫</option>
+                                <option value="洗护">🛁 洗护</option>
+                                <option value="就医">🏥 就医</option>
+                                <option value="手术">🔪 手术</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>日期：</label>
+                            <input type="date" id="healthDate" required>
+                        </div>
+                        <div class="form-row">
+                            <label>标题：</label>
+                            <input type="text" id="healthTitle" placeholder="例如：卫佳伍第一针" required>
+                        </div>
+                        <div class="form-row">
+                            <label>机构：</label>
+                            <input type="text" id="healthInstitution" placeholder="医院/机构名称">
+                        </div>
+                        <div class="form-row">
+                            <label>联系方式：</label>
+                            <input type="text" id="healthContact" placeholder="电话">
+                        </div>
+                        <div class="form-row">
+                            <label>下次提醒日期：</label>
+                            <input type="date" id="healthNextDue">
+                        </div>
+                        <div class="form-row">
+                            <label>费用(元)：</label>
+                            <input type="number" id="healthCost" step="0.01">
+                        </div>
+                        <div class="form-row">
+                            <label>备注/医嘱：</label>
+                            <textarea id="healthNote" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">💾 保存</button>
+                    </form>
+                </div>
+
+                <!-- 即将到来的提醒 -->
+                <div class="reminder-card">
+                    <h3>⏰ 即将到来的提醒</h3>
+                    <div id="upcomingReminders"></div>
+                </div>
+
+                <!-- 历史健康记录 -->
+                <div class="records-card">
+                    <h3>📋 历史健康记录</h3>
+                    <div id="healthRecordsList" class="records-list"></div>
+                </div>
+
+                <!-- 医保信息 -->
+                <div class="info-card">
+                    <h3>🏥 医保信息</h3>
+                    <div id="insuranceInfo" class="insurance-content"></div>
+                    <button class="btn-secondary" onclick="editInsurance()">编辑医保信息</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 4：成长 ==================== -->
+        <div id="tab-growth" class="tab-content">
+            <div class="container">
+                <!-- 添加成长记录表单 -->
+                <div class="form-card">
+                    <h3>➕ 记录成长数据</h3>
+                    <form id="growthForm">
+                        <div class="form-row">
+                            <label>日期：</label>
+                            <input type="date" id="growthDate" required>
+                        </div>
+                        <div class="form-row">
+                            <label>体重(kg)：</label>
+                            <input type="number" id="growthWeight" step="0.1" placeholder="例如：8.5">
+                        </div>
+                        <div class="form-row">
+                            <label>体长(cm)：</label>
+                            <input type="number" id="growthLength" step="0.5" placeholder="例如：45">
+                        </div>
+                        <div class="form-row">
+                            <label>备注：</label>
+                            <input type="text" id="growthNote" placeholder="可选">
+                        </div>
+                        <button type="submit" class="btn-primary">💾 保存</button>
+                    </form>
+                </div>
+
+                <!-- 体重曲线图 -->
+                <div class="chart-card">
+                    <h3>📊 体重曲线图</h3>
+                    <canvas id="weightChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- 体长曲线图 -->
+                <div class="chart-card">
+                    <h3>📊 体长曲线图</h3>
+                    <canvas id="lengthChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- 成长记录列表 -->
+                <div class="records-card">
+                    <h3>📋 成长记录列表</h3>
+                    <div id="growthRecordsList" class="records-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 5：知识 ==================== -->
+        <div id="tab-knowledge" class="tab-content">
+            <div class="container">
+                <!-- 搜索框 -->
+                <div class="search-card">
+                    <h3>🔍 搜索饮食禁忌</h3>
+                    <input type="text" id="tabooSearch" placeholder="输入食物名称，如：巧克力" class="search-input">
+                </div>
+
+                <!-- 绝对禁止 -->
+                <div class="knowledge-card">
+                    <h3>🚫 绝对禁止的食物</h3>
+                    <div id="absoluteTaboo" class="taboo-table"></div>
+                </div>
+
+                <!-- 谨慎避免 -->
+                <div class="knowledge-card">
+                    <h3>⚠️ 谨慎避免的食物</h3>
+                    <div id="cautiousTaboo" class="taboo-table"></div>
+                </div>
+
+                <!-- 养狗小贴士 -->
+                <div class="tips-card">
+                    <h3>💡 养狗小贴士</h3>
+                    <p id="dailyTip"></p>
+                    <button class="btn-secondary" onclick="refreshTip()">换一条</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Tab 6：设置 ==================== -->
+        <div id="tab-settings" class="tab-content">
+            <div class="container">
+                <!-- 基础信息 -->
+                <div class="form-card">
+                    <h3>🐕 宠物基础信息</h3>
+                    <form id="petInfoForm">
+                        <div class="form-row">
+                            <label>姓名：</label>
+                            <input type="text" id="petName" placeholder="小麦">
+                        </div>
+                        <div class="form-row">
+                            <label>出生日期：</label>
+                            <input type="date" id="petBirthday">
+                        </div>
+                        <div class="form-row">
+                            <label>当前年龄：</label>
+                            <span id="petAge">-</span>
+                        </div>
+                        <div class="form-row">
+                            <label>出生地：</label>
+                            <input type="text" id="petBirthplace" placeholder="城市">
+                        </div>
+                        <div class="form-row">
+                            <label>到家日期：</label>
+                            <input type="date" id="petArrivalDate">
+                        </div>
+                        <div class="form-row">
+                            <label>父亲：</label>
+                            <input type="text" id="petFather" placeholder="可选">
+                        </div>
+                        <div class="form-row">
+                            <label>母亲：</label>
+                            <input type="text" id="petMother" placeholder="可选">
+                        </div>
+                        <button type="submit" class="btn-primary">💾 保存基础信息</button>
+                    </form>
+                </div>
+
+                <!-- 密码设置 -->
+                <div class="form-card">
+                    <h3>🔐 密码设置</h3>
+                    <div class="form-row">
+                        <label>当前密码：</label>
+                        <input type="password" id="oldPassword" placeholder="输入当前密码">
+                    </div>
+                    <div class="form-row">
+                        <label>新密码：</label>
+                        <input type="password" id="newPassword" placeholder="新密码">
+                    </div>
+                    <div class="form-row">
+                        <label>确认新密码：</label>
+                        <input type="password" id="confirmPassword" placeholder="再次输入">
+                    </div>
+                    <button class="btn-primary" onclick="changePassword()">修改密码</button>
+                </div>
+
+                <!-- 数据管理 -->
+                <div class="form-card">
+                    <h3>📁 数据管理</h3>
+                    <div class="data-stats">
+                        <p>📊 当前数据量：<span id="dataStats">计算中...</span></p>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-secondary" onclick="exportBackup()">📤 导出所有数据</button>
+                        <button class="btn-secondary" onclick="triggerImport()">📥 导入备份</button>
+                        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(this)">
+                        <button class="btn-danger" onclick="clearAllData()">🗑️ 清空所有数据</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用记录弹窗 -->
+    <div id="recordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRecordModal()">&times;</span>
+            <h3 id="recordModalTitle">添加记录</h3>
+            <form id="recordModalForm">
+                <input type="hidden" id="recordType">
+                <div class="form-row">
+                    <label>日期：</label>
+                    <input type="date" id="recordDate" required>
+                </div>
+                <div class="form-row">
+                    <label>内容：</label>
+                    <textarea id="recordContent" rows="3" required placeholder="例如：狗粮200g"></textarea>
+                </div>
+                <div class="form-row">
+                    <label>备注：</label>
+                    <input type="text" id="recordNote" placeholder="可选">
+                </div>
+                <button type="submit" class="btn-primary">💾 保存</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 体重弹窗 -->
+    <div id="weightModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWeightModal()">&times;</span>
+            <h3>⚖️ 记录体重</h3>
+            <form id="weightModalForm">
+                <div class="form-row">
+                    <label>日期：</label>
+                    <input type="date" id="weightRecordDate" required>
+                </div>
+                <div class="form-row">
+                    <label>体重(kg)：</label>
+                    <input type="number" id="weightRecordValue" step="0.1" required>
+                </div>
+                <button type="submit" class="btn-primary">💾 保存</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 医保编辑弹窗 -->
+    <div id="insuranceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeInsuranceModal()">&times;</span>
+            <h3>🏥 编辑医保信息</h3>
+            <form id="insuranceForm">
+                <div class="form-row">
+                    <label>险种：</label>
+                    <input type="text" id="insPlanName" placeholder="支付宝宠物医保升级版">
+                </div>
+                <div class="form-row">
+                    <label>保险机构：</label>
+                    <input type="text" id="insProvider" placeholder="众安保险">
+                </div>
+                <div class="form-row">
+                    <label>保费：</label>
+                    <input type="text" id="insPremium" placeholder="38.25元/月">
+                </div>
+                <div class="form-row">
+                    <label>保险期：</label>
+                    <input type="text" id="insPeriod" placeholder="20260531-20270530">
+                </div>
+                <div class="form-row">
+                    <label>理赔限额：</label>
+                    <textarea id="insCoverage" rows="3" placeholder="理赔规则..."></textarea>
+                </div>
+                <div class="form-row">
+                    <label>理赔渠道：</label>
+                    <input type="text" id="insChannel" placeholder="支付宝在线理赔">
+                </div>
+                <div class="form-row">
+                    <label>赠送权益：</label>
+                    <textarea id="insBonus" rows="2" placeholder="赠送权益..."></textarea>
+                </div>
+                <div class="form-row">
+                    <label>咨询电话：</label>
+                    <input type="text" id="insHotline" placeholder="400-xxx-xxxx">
+                </div>
+                <button type="submit" class="btn-primary">💾 保存医保信息</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

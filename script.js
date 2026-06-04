@@ -1,5 +1,6 @@
 // ==================== 全局变量 ====================
 let mealRecords = [];
+let stoolRecords = [];      // 便便记录独立存储
 let simpleRecords = [];
 let weights = [];
 let lengths = [];
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function loadAllData() {
     mealRecords = JSON.parse(localStorage.getItem('wheat_mealRecords') || '[]');
+    stoolRecords = JSON.parse(localStorage.getItem('wheat_stoolRecords') || '[]');
     simpleRecords = JSON.parse(localStorage.getItem('wheat_simpleRecords') || '[]');
     weights = JSON.parse(localStorage.getItem('wheat_weights') || '[]');
     lengths = JSON.parse(localStorage.getItem('wheat_lengths') || '[]');
@@ -70,6 +72,7 @@ function loadAllData() {
 
 function saveAllData() {
     localStorage.setItem('wheat_mealRecords', JSON.stringify(mealRecords));
+    localStorage.setItem('wheat_stoolRecords', JSON.stringify(stoolRecords));
     localStorage.setItem('wheat_simpleRecords', JSON.stringify(simpleRecords));
     localStorage.setItem('wheat_weights', JSON.stringify(weights));
     localStorage.setItem('wheat_lengths', JSON.stringify(lengths));
@@ -177,6 +180,7 @@ function closeMealModal() {
 
 document.getElementById('mealModalForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const mealData = {
         id: Date.now(),
         date: document.getElementById('modalMealDate').value,
@@ -195,12 +199,42 @@ document.getElementById('mealModalForm')?.addEventListener('submit', (e) => {
     }
     mealRecords.push(mealData);
     saveAllData();
-    renderAll();
     closeMealModal();
+    renderAll();
     showMessage('保存成功');
 });
 
-// ==================== 简单记录弹窗 ====================
+// ==================== 便便记录弹窗 ====================
+function openStoolModal() {
+    document.getElementById('stoolDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('stoolStatus').value = '正常';
+    document.getElementById('stoolNote').value = '';
+    document.getElementById('stoolModal').style.display = 'flex';
+}
+
+function closeStoolModal() {
+    document.getElementById('stoolModal').style.display = 'none';
+}
+
+document.getElementById('stoolForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const statusMap = { '正常': '✅ 正常', '软便': '⚠️ 软便', '腹泻': '🚨 腹泻', '偏干': '💧 偏干' };
+    const newRecord = {
+        id: Date.now(),
+        date: document.getElementById('stoolDate').value,
+        status: document.getElementById('stoolStatus').value,
+        statusText: statusMap[document.getElementById('stoolStatus').value],
+        note: document.getElementById('stoolNote').value
+    };
+    stoolRecords.push(newRecord);
+    saveAllData();
+    closeStoolModal();
+    renderAll();
+    showMessage('便便记录已保存');
+});
+
+// ==================== 大事记弹窗 ====================
 function openAddSimpleModal(type) {
     document.getElementById('simpleRecordType').value = type;
     document.getElementById('simpleModalTitle').innerText = `添加${type}`;
@@ -216,6 +250,7 @@ function closeSimpleModal() {
 
 document.getElementById('simpleModalForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const type = document.getElementById('simpleRecordType').value;
     const newRecord = {
         id: Date.now(),
@@ -227,18 +262,18 @@ document.getElementById('simpleModalForm')?.addEventListener('submit', (e) => {
     if (!newRecord.content) { alert('请填写内容'); return; }
     simpleRecords.push(newRecord);
     saveAllData();
-    renderAll();
     closeSimpleModal();
+    renderAll();
     showMessage('保存成功');
 });
 
 // ==================== 渲染所有模块 ====================
 function renderAll() {
-    renderWeekStats();
+    renderTodayStats();
     renderTodayTimeline();
     renderTodayReminders();
     renderRecentMilestones();
-    renderAllMilestones();      // 成长Tab的大记事
+    renderAllMilestones();
     renderDietCalendar();
     renderDietRecordsList();
     renderHealthRecords();
@@ -252,25 +287,25 @@ function renderAll() {
     updateDataStats();
 }
 
-function renderWeekStats() {
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7*24*3600*1000).toISOString().slice(0,10);
-    const recentMeals = mealRecords.filter(m => m.date >= weekAgo);
-    const totalMeals = recentMeals.length;
-    const totalWater = recentMeals.reduce((sum, m) => sum + (m.water || 0), 0);
-    const uniqueDays = new Set(recentMeals.map(m => m.date)).size;
-    document.getElementById('statMeals').innerText = totalMeals;
-    document.getElementById('statWater').innerText = totalWater;
-    document.getElementById('statDays').innerText = uniqueDays;
+function renderTodayStats() {
+    const today = new Date().toISOString().slice(0,10);
+    const todayMeals = mealRecords.filter(m => m.date === today);
+    const todayWater = todayMeals.reduce((sum, m) => sum + (m.water || 0), 0);
+    const todayStools = stoolRecords.filter(s => s.date === today).length;
+    
+    document.getElementById('todayMeals').innerText = todayMeals.length;
+    document.getElementById('todayWater').innerText = todayWater;
+    document.getElementById('todayStoolCount').innerText = todayStools;
 }
 
 function renderTodayTimeline() {
     const today = new Date().toISOString().slice(0,10);
     const todayMeals = mealRecords.filter(m => m.date === today).sort((a,b) => a.time.localeCompare(b.time));
-    const todaySimple = simpleRecords.filter(s => s.date === today);
+    const todayStools = stoolRecords.filter(s => s.date === today);
+    const todayMilestones = simpleRecords.filter(s => s.date === today && s.type === '大事记');
     
     const container = document.getElementById('todayTimeline');
-    if (todayMeals.length === 0 && todaySimple.length === 0) {
+    if (todayMeals.length === 0 && todayStools.length === 0 && todayMilestones.length === 0) {
         container.innerHTML = '<div class="empty-state">✨ 今天还没有记录，点击上方按钮添加</div>';
         return;
     }
@@ -288,15 +323,24 @@ function renderTodayTimeline() {
             <button class="delete-mini" onclick="deleteMealRecord(${m.id})">🗑️</button>
         </div>`;
     });
-    todaySimple.forEach(s => {
-        const icon = s.type === '饮水' ? '💧' : (s.type === '便便' ? '💩' : '📝');
+    todayStools.forEach(s => {
         html += `<div class="timeline-item">
             <div style="flex:1">
-                <div class="timeline-meal">${icon} ${s.type}</div>
-                <div class="timeline-detail">${s.content}</div>
+                <div class="timeline-meal">💩 便便</div>
+                <div class="timeline-detail">状态：${s.statusText}</div>
                 ${s.note ? `<div class="timeline-note">📌 ${s.note}</div>` : ''}
             </div>
-            <button class="delete-mini" onclick="deleteSimpleRecord(${s.id})">🗑️</button>
+            <button class="delete-mini" onclick="deleteStoolRecord(${s.id})">🗑️</button>
+        </div>`;
+    });
+    todayMilestones.forEach(m => {
+        html += `<div class="timeline-item">
+            <div style="flex:1">
+                <div class="timeline-meal">📝 大事记</div>
+                <div class="timeline-detail">${m.content}</div>
+                ${m.note ? `<div class="timeline-note">📌 ${m.note}</div>` : ''}
+            </div>
+            <button class="delete-mini" onclick="deleteSimpleRecord(${m.id})">🗑️</button>
         </div>`;
     });
     container.innerHTML = html;
@@ -373,9 +417,9 @@ function renderDietCalendar() {
 
 function showDailySummary(date) {
     const meals = mealRecords.filter(m => m.date === date).sort((a,b) => a.time.localeCompare(b.time));
-    const simple = simpleRecords.filter(s => s.date === date && s.type !== '大事记');
+    const stools = stoolRecords.filter(s => s.date === date);
     
-    if (meals.length === 0 && simple.length === 0) {
+    if (meals.length === 0 && stools.length === 0) {
         document.getElementById('dailySummaryContent').innerHTML = '<div class="empty-state">当日无饮食记录</div>';
         document.getElementById('dailySummaryCard').style.display = 'block';
         return;
@@ -392,12 +436,14 @@ function showDailySummary(date) {
             ${m.note ? `📌 ${m.note}` : ''}
         </div>`;
     });
-    simple.forEach(s => {
-        const icon = s.type === '饮水' ? '💧' : '💩';
-        html += `<div style="margin-top:8px;padding:8px;background:#F9FAFB;border-radius:12px;">
-            ${icon} ${s.type}：${s.content} ${s.note ? `（${s.note}）` : ''}
-        </div>`;
-    });
+    if (stools.length > 0) {
+        html += `<div style="margin-top:8px;"><strong>💩 便便记录</strong></div>`;
+        stools.forEach(s => {
+            html += `<div style="margin-top:4px;padding:8px;background:#F9FAFB;border-radius:12px;">
+                状态：${s.statusText} ${s.note ? `（${s.note}）` : ''}
+            </div>`;
+        });
+    }
     document.getElementById('dailySummaryContent').innerHTML = html;
     document.getElementById('dailySummaryCard').style.display = 'block';
 }
@@ -570,7 +616,7 @@ function renderTabooLists() {
 }
 
 function updateDataStats() {
-    const total = mealRecords.length + simpleRecords.length + weights.length + lengths.length + healthEvents.length;
+    const total = mealRecords.length + stoolRecords.length + simpleRecords.length + weights.length + lengths.length + healthEvents.length;
     document.getElementById('dataStats').innerText = `记录 ${total} 条`;
 }
 
@@ -582,6 +628,15 @@ function deleteMealRecord(id) {
         renderAll();
     }
 }
+
+function deleteStoolRecord(id) {
+    if (confirm('删除这条便便记录？')) {
+        stoolRecords = stoolRecords.filter(s => s.id !== id);
+        saveAllData();
+        renderAll();
+    }
+}
+
 function deleteSimpleRecord(id) {
     if (confirm('删除这条记录？')) {
         simpleRecords = simpleRecords.filter(s => s.id !== id);
@@ -589,6 +644,7 @@ function deleteSimpleRecord(id) {
         renderAll();
     }
 }
+
 function deleteHealthEvent(id) {
     if (confirm('删除这条健康记录？')) {
         healthEvents = healthEvents.filter(e => e.id !== id);
@@ -596,6 +652,7 @@ function deleteHealthEvent(id) {
         renderAll();
     }
 }
+
 function deleteGrowthRecord(type, id) {
     if (confirm('删除这条成长记录？')) {
         if (type === '体重') weights = weights.filter(w => w.id !== id);
@@ -660,6 +717,7 @@ function resetTabooSearch() {
 // ==================== 表单提交 ====================
 document.getElementById('healthForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const newEvent = {
         id: Date.now(),
         eventType: document.getElementById('healthType').value,
@@ -681,6 +739,7 @@ document.getElementById('healthForm')?.addEventListener('submit', (e) => {
 
 document.getElementById('growthForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const date = document.getElementById('growthDate').value;
     const weightVal = document.getElementById('growthWeight').value;
     const lengthVal = document.getElementById('growthLength').value;
@@ -696,6 +755,7 @@ document.getElementById('growthForm')?.addEventListener('submit', (e) => {
 
 document.getElementById('petInfoForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     petInfo = {
         name: document.getElementById('petName').value,
         birthday: document.getElementById('petBirthday').value,
@@ -711,7 +771,7 @@ document.getElementById('petInfoForm')?.addEventListener('submit', (e) => {
 
 // ==================== 备份功能 ====================
 function exportBackup() {
-    const backup = { mealRecords, simpleRecords, weights, lengths, healthEvents, petInfo, insurance };
+    const backup = { mealRecords, stoolRecords, simpleRecords, weights, lengths, healthEvents, petInfo, insurance };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -727,6 +787,7 @@ function importBackup(input) {
         try {
             const data = JSON.parse(e.target.result);
             if (data.mealRecords) mealRecords = data.mealRecords;
+            if (data.stoolRecords) stoolRecords = data.stoolRecords;
             if (data.simpleRecords) simpleRecords = data.simpleRecords;
             if (data.weights) weights = data.weights;
             if (data.lengths) lengths = data.lengths;
@@ -743,7 +804,7 @@ function importBackup(input) {
 }
 function clearAllData() {
     if (confirm('⚠️ 确定清空所有数据？不可恢复！')) {
-        mealRecords = []; simpleRecords = []; weights = []; lengths = []; healthEvents = []; petInfo = {};
+        mealRecords = []; stoolRecords = []; simpleRecords = []; weights = []; lengths = []; healthEvents = []; petInfo = {};
         insurance = getDefaultInsurance();
         saveAllData();
         renderAll();
@@ -760,7 +821,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         const tabId = `tab-${btn.dataset.tab}`;
         document.getElementById(tabId)?.classList.add('active');
         if (btn.dataset.tab === 'growth') setTimeout(() => { renderWeightChart(); renderLengthChart(); }, 100);
-        // 隐藏饮食小计卡片
         const summaryCard = document.getElementById('dailySummaryCard');
         if (summaryCard) summaryCard.style.display = 'none';
     });

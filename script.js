@@ -1,6 +1,6 @@
 // ==================== 全局变量 ====================
-let mealRecords = [];       // 餐次记录（主食+辅食+饮水一组）
-let simpleRecords = [];     // 简单记录（便便、大事记、单独饮水）
+let mealRecords = [];
+let simpleRecords = [];
 let weights = [];
 let lengths = [];
 let healthEvents = [];
@@ -18,14 +18,20 @@ const foodTaboo = {
         { name: "木糖醇（口香糖、牙膏、无糖糖果等）", severity: "高（可致命）", effect: "导致低血糖、急性肝衰竭" },
         { name: "葡萄、葡萄干", severity: "高（可致命）", effect: "引发急性肾衰竭" },
         { name: "夏威夷果", severity: "高（可致命）", effect: "神经毒性，导致虚弱、呕吐、震颤" },
-        { name: "洋葱、大葱、韭菜、大蒜", severity: "高（可致命）", effect: "破坏红细胞，引发溶血性贫血" }
+        { name: "洋葱、大葱、韭菜、大蒜", severity: "高（可致命）", effect: "破坏红细胞，引发溶血性贫血" },
+        { name: "发霉/野生菌类", severity: "高（可致命）", effect: "含霉菌毒素，可致死" },
+        { name: "酒精", severity: "高（可致命）", effect: "中毒、昏迷、死亡" },
+        { name: "禽类骨头（鸡、鸭、鹅）、鱼刺", severity: "高（物理损伤）", effect: "划伤或刺穿食道、肠胃，引起内出血" }
     ],
     cautious: [
         { name: "肥肉、油炸食品", severity: "中", effect: "诱发胰腺炎" },
         { name: "动物肝脏", severity: "中", effect: "长期大量食用导致维生素A中毒" },
         { name: "生鸡蛋", severity: "中", effect: "沙门氏菌感染，消耗维生素H" },
-        { name: "生肉、生鱼", severity: "中", effect: "细菌、寄生虫感染" },
-        { name: "人类饭菜（高盐高糖）", severity: "低", effect: "加重肾脏负担" }
+        { name: "生肉、生鱼", severity: "中", effect: "细菌、寄生虫感染，生鱼致维生素B1缺乏" },
+        { name: "桃、李、杏的果核", severity: "中", effect: "果核含氰化物，且有窒息风险" },
+        { name: "海鲜", severity: "低", effect: "部分狗狗过敏，引起皮肤红肿、瘙痒" },
+        { name: "人类饭菜（高盐高糖）", severity: "低", effect: "加重肾脏负担，导致肥胖、糖尿病" },
+        { name: "牛奶及乳制品", severity: "低", effect: "乳糖不耐受，引起腹泻、胀气" }
     ]
 };
 
@@ -35,8 +41,13 @@ const tipsDatabase = [
     "每天至少散步30分钟，小型犬可以适当减少。",
     "每月体外驱虫一次，每季度体内驱虫一次。",
     "每年按时打疫苗：狂犬+联苗。",
-    "狗狗不能吃：巧克力、洋葱、葡萄、木糖醇。",
-    "夏天遛狗避开中午，小心地面烫伤脚垫。"
+    "狗狗不能吃：巧克力、洋葱、葡萄、木糖醇、夏威夷果。",
+    "每周检查耳朵、剪指甲，预防耳螨和指甲过长。",
+    "夏天遛狗避开中午，小心地面烫伤脚垫。",
+    "保持体重：能摸到肋骨但看不到是理想体型。",
+    "换牙期（4-6个月）给磨牙棒，避免咬坏家具。",
+    "社会化黄金期：3-16周，多接触人和环境。",
+    "定点排便训练：饭后带去指定地点，奖励零食。"
 ];
 
 // ==================== 初始化 ====================
@@ -73,9 +84,9 @@ function getDefaultInsurance() {
         provider: "众安保险",
         premium: "38.25元/月",
         period: "20260531-20270530",
-        coverage: "每次门诊限额1200元，手术限额2000元，定点医院赔付70%",
-        channel: "支付宝在线理赔",
-        bonus: "体外驱虫药1支、宠物联苗1支",
+        coverage: "每次门诊限额1200元，手术限额2000元，定点医院赔付70%，非定点医院赔付40%，清单外医院不赔付。",
+        channel: "支付宝在线理赔或众安保险APP",
+        bonus: "体外驱虫药（邮寄）1支、宠物联苗1支、免费宠物医师咨询4008299958",
         hotline: "400-829-9958"
     };
 }
@@ -137,6 +148,11 @@ function refreshTip() {
         const randomIndex = Math.floor(Math.random() * tipsDatabase.length);
         tipElem.innerText = tipsDatabase[randomIndex];
     }
+}
+
+function getEventTypeIcon(type) {
+    const icons = { '疫苗': '💉', '驱虫': '🪱', '洗护': '🛁', '就医': '🏥', '手术': '🔪' };
+    return icons[type] || '📌';
 }
 
 // ==================== 餐次记录弹窗 ====================
@@ -222,6 +238,7 @@ function renderAll() {
     renderTodayTimeline();
     renderTodayReminders();
     renderRecentMilestones();
+    renderAllMilestones();      // 成长Tab的大记事
     renderDietCalendar();
     renderDietRecordsList();
     renderHealthRecords();
@@ -318,6 +335,22 @@ function renderRecentMilestones() {
     `).join('');
 }
 
+function renderAllMilestones() {
+    const milestones = simpleRecords.filter(s => s.type === '大事记').sort((a,b) => new Date(b.date) - new Date(a.date));
+    const container = document.getElementById('allMilestones');
+    if (!container) return;
+    if (milestones.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无大事记，点击📝记录重要时刻</div>';
+        return;
+    }
+    container.innerHTML = milestones.map(m => `
+        <div class="timeline-item">
+            <span>📅 ${m.date}：${m.content} ${m.note ? `（${m.note}）` : ''}</span>
+            <button class="delete-mini" onclick="deleteSimpleRecord(${m.id})">🗑️</button>
+        </div>
+    `).join('');
+}
+
 function renderDietCalendar() {
     const datesWithMeals = new Set(mealRecords.map(m => m.date));
     const today = new Date();
@@ -332,10 +365,41 @@ function renderDietCalendar() {
     for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const hasRecord = datesWithMeals.has(dateStr);
-        html += `<div class="calendar-day ${hasRecord ? 'has-record' : ''}">${d}</div>`;
+        html += `<div class="calendar-day ${hasRecord ? 'has-record' : ''}" onclick="showDailySummary('${dateStr}')">${d}</div>`;
     }
     html += '</div>';
     document.getElementById('dietCalendar').innerHTML = html;
+}
+
+function showDailySummary(date) {
+    const meals = mealRecords.filter(m => m.date === date).sort((a,b) => a.time.localeCompare(b.time));
+    const simple = simpleRecords.filter(s => s.date === date && s.type !== '大事记');
+    
+    if (meals.length === 0 && simple.length === 0) {
+        document.getElementById('dailySummaryContent').innerHTML = '<div class="empty-state">当日无饮食记录</div>';
+        document.getElementById('dailySummaryCard').style.display = 'block';
+        return;
+    }
+    
+    let totalWater = meals.reduce((sum, m) => sum + (m.water || 0), 0);
+    let html = `<div><strong>${date}</strong> 共 ${meals.length} 餐，总饮水 ${totalWater}ml</div>`;
+    meals.forEach(m => {
+        html += `<div style="margin-top:8px;padding:8px;background:#F9FAFB;border-radius:12px;">
+            <strong>${m.meal} ${m.time}</strong><br>
+            ${m.mainFood ? `主食：${m.mainFood} ${m.mainWeight}g<br>` : ''}
+            ${m.sideFood ? `辅食：${m.sideFood} ${m.sideWeight}g<br>` : ''}
+            ${m.water ? `饮水：${m.water}ml<br>` : ''}
+            ${m.note ? `📌 ${m.note}` : ''}
+        </div>`;
+    });
+    simple.forEach(s => {
+        const icon = s.type === '饮水' ? '💧' : '💩';
+        html += `<div style="margin-top:8px;padding:8px;background:#F9FAFB;border-radius:12px;">
+            ${icon} ${s.type}：${s.content} ${s.note ? `（${s.note}）` : ''}
+        </div>`;
+    });
+    document.getElementById('dailySummaryContent').innerHTML = html;
+    document.getElementById('dailySummaryCard').style.display = 'block';
 }
 
 function renderDietRecordsList() {
@@ -350,7 +414,7 @@ function renderDietRecordsList() {
     
     let html = '';
     Object.keys(grouped).sort().reverse().forEach(date => {
-        html += `<div class="record-group"><div class="record-group-date">📅 ${date}</div>`;
+        html += `<div class="record-group"><div class="record-group-date" style="font-weight:600;margin:12px 0 8px;">📅 ${date}</div>`;
         grouped[date].forEach(m => {
             html += `<div class="record-item">
                 <div style="flex:1">
@@ -479,14 +543,14 @@ function renderInsurance() {
     const container = document.getElementById('insuranceInfo');
     if (!container) return;
     container.innerHTML = `
-        <div><strong>险种：</strong> ${insurance.planName || '-'}</div>
-        <div><strong>机构：</strong> ${insurance.provider || '-'}</div>
-        <div><strong>保费：</strong> ${insurance.premium || '-'}</div>
-        <div><strong>保险期：</strong> ${insurance.period || '-'}</div>
-        <div><strong>理赔：</strong> ${insurance.coverage || '-'}</div>
-        <div><strong>渠道：</strong> ${insurance.channel || '-'}</div>
-        <div><strong>赠送：</strong> ${insurance.bonus || '-'}</div>
-        <div><strong>电话：</strong> ${insurance.hotline || '-'}</div>
+        <div class="insurance-item"><strong>险种：</strong> ${insurance.planName || '-'}</div>
+        <div class="insurance-item"><strong>保险机构：</strong> ${insurance.provider || '-'}</div>
+        <div class="insurance-item"><strong>保费：</strong> ${insurance.premium || '-'}</div>
+        <div class="insurance-item"><strong>保险期：</strong> ${insurance.period || '-'}</div>
+        <div class="insurance-item"><strong>理赔限额：</strong> ${insurance.coverage || '-'}</div>
+        <div class="insurance-item"><strong>理赔渠道：</strong> ${insurance.channel || '-'}</div>
+        <div class="insurance-item"><strong>赠送权益：</strong> ${insurance.bonus || '-'}</div>
+        <div class="insurance-item"><strong>咨询电话：</strong> ${insurance.hotline || '-'}</div>
     `;
 }
 
@@ -508,11 +572,6 @@ function renderTabooLists() {
 function updateDataStats() {
     const total = mealRecords.length + simpleRecords.length + weights.length + lengths.length + healthEvents.length;
     document.getElementById('dataStats').innerText = `记录 ${total} 条`;
-}
-
-function getEventTypeIcon(type) {
-    const icons = { '疫苗': '💉', '驱虫': '🪱', '洗护': '🛁', '就医': '🏥', '手术': '🔪' };
-    return icons[type] || '📌';
 }
 
 // ==================== 删除功能 ====================
@@ -691,35 +750,6 @@ function clearAllData() {
         showMessage('所有数据已清空');
     }
 }
-function editInsurance() {
-    document.getElementById('insPlanName').value = insurance.planName || '';
-    document.getElementById('insProvider').value = insurance.provider || '';
-    document.getElementById('insPremium').value = insurance.premium || '';
-    document.getElementById('insPeriod').value = insurance.period || '';
-    document.getElementById('insCoverage').value = insurance.coverage || '';
-    document.getElementById('insChannel').value = insurance.channel || '';
-    document.getElementById('insBonus').value = insurance.bonus || '';
-    document.getElementById('insHotline').value = insurance.hotline || '';
-    document.getElementById('insuranceModal').style.display = 'flex';
-}
-function closeInsuranceModal() { document.getElementById('insuranceModal').style.display = 'none'; }
-document.getElementById('insuranceForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    insurance = {
-        planName: document.getElementById('insPlanName').value,
-        provider: document.getElementById('insProvider').value,
-        premium: document.getElementById('insPremium').value,
-        period: document.getElementById('insPeriod').value,
-        coverage: document.getElementById('insCoverage').value,
-        channel: document.getElementById('insChannel').value,
-        bonus: document.getElementById('insBonus').value,
-        hotline: document.getElementById('insHotline').value
-    };
-    saveAllData();
-    renderInsurance();
-    closeInsuranceModal();
-    showMessage('医保信息已保存');
-});
 
 // Tab 切换
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -730,5 +760,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         const tabId = `tab-${btn.dataset.tab}`;
         document.getElementById(tabId)?.classList.add('active');
         if (btn.dataset.tab === 'growth') setTimeout(() => { renderWeightChart(); renderLengthChart(); }, 100);
+        // 隐藏饮食小计卡片
+        const summaryCard = document.getElementById('dailySummaryCard');
+        if (summaryCard) summaryCard.style.display = 'none';
     });
 });

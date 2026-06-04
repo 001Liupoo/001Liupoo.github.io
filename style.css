@@ -158,26 +158,7 @@ body {
     margin: 0 auto;
 }
 
-/* 首页样式 */
-.welcome-card {
-    background: linear-gradient(135deg, #E11D48 0%, #BE123C 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 32px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 20px rgba(225,29,72,0.2);
-}
-
-.welcome-text h2 {
-    font-size: 20px;
-    margin-bottom: 4px;
-}
-
-.welcome-text p {
-    font-size: 14px;
-    opacity: 0.9;
-}
-
+/* 统计卡片 */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -207,7 +188,7 @@ body {
 
 .quick-entry {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-bottom: 24px;
 }
@@ -231,13 +212,31 @@ body {
 
 /* 通用卡片 */
 .form-card, .records-card, .reminder-card, .timeline-card, 
-.calendar-card, .chart-card, .knowledge-card, .tips-card, 
-.info-card, .search-card, .milestone-card, .daily-summary-card {
+.chart-card, .knowledge-card, .tips-card, 
+.info-card, .search-card, .milestone-card {
     background: white;
     border-radius: 24px;
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* 左右分栏布局 */
+.split-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.calendar-card, .daily-summary-card {
+    flex: 1;
+    min-width: 200px;
+    background: white;
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 0;
 }
 
 h3 {
@@ -469,6 +468,15 @@ h3 {
     font-size: 14px;
 }
 
+/* 医保信息 */
+.insurance-content {
+    line-height: 1.6;
+    font-size: 14px;
+}
+.insurance-item {
+    margin-bottom: 8px;
+}
+
 /* 弹窗 */
 .modal {
     display: none;
@@ -510,10 +518,13 @@ h3 {
         width: auto;
     }
     .quick-entry {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
     .quick-btn-large {
         font-size: 12px;
         padding: 10px 0;
+    }
+    .split-layout {
+        flex-direction: column;
     }
 }

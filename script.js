@@ -1,6 +1,6 @@
 // ==================== 全局变量 ====================
 let mealRecords = [];
-let stoolRecords = [];      // 便便记录独立存储
+let stoolRecords = [];      // 臭臭记录（尿尿/便便）
 let simpleRecords = [];
 let weights = [];
 let lengths = [];
@@ -11,6 +11,7 @@ let insurance = {};
 let weightChart = null;
 let lengthChart = null;
 let currentPassword = localStorage.getItem('petPassword') || '1234';
+let selectedDate = null;
 
 // ==================== 饮食禁忌知识库 ====================
 const foodTaboo = {
@@ -51,12 +52,24 @@ const tipsDatabase = [
     "定点排便训练：饭后带去指定地点，奖励零食。"
 ];
 
+// 臭臭状态选项
+const stoolStatusOptions = {
+    '尿尿': ['正常', '偏黄', '浑浊', '带血'],
+    '便便': ['正常（成型）', '软便', '腹泻', '偏干/硬', '带血', '带虫']
+};
+
 // ==================== 初始化 ====================
 document.addEventListener('DOMContentLoaded', () => {
     loadAllData();
     renderAll();
     updateCurrentDate();
     refreshTip();
+    
+    // 监听类别变化，动态更新状态选项
+    const stoolTypeSelect = document.getElementById('stoolType');
+    if (stoolTypeSelect) {
+        stoolTypeSelect.addEventListener('change', updateStoolStatusOptions);
+    }
 });
 
 function loadAllData() {
@@ -158,6 +171,33 @@ function getEventTypeIcon(type) {
     return icons[type] || '📌';
 }
 
+// 获取最近N条数据
+function getRecentItems(items, count = 10) {
+    return [...items].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, count);
+}
+
+// ==================== 臭臭弹窗状态选项更新 ====================
+function updateStoolStatusOptions() {
+    const type = document.getElementById('stoolType').value;
+    const statusSelect = document.getElementById('stoolStatus');
+    if (!statusSelect) return;
+    
+    const options = stoolStatusOptions[type] || ['正常'];
+    statusSelect.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+}
+
+function openStoolModal() {
+    document.getElementById('stoolDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('stoolTime').value = '12:00';
+    document.getElementById('stoolType').value = '便便';
+    updateStoolStatusOptions();
+    document.getElementById('stoolModal').style.display = 'flex';
+}
+
+function closeStoolModal() {
+    document.getElementById('stoolModal').style.display = 'none';
+}
+
 // ==================== 餐次记录弹窗 ====================
 function openAddMealModal(mealType) {
     document.getElementById('modalMealType').value = mealType;
@@ -178,6 +218,21 @@ function closeMealModal() {
     document.getElementById('mealModal').style.display = 'none';
 }
 
+// ==================== 大事记弹窗 ====================
+function openAddSimpleModal(type) {
+    document.getElementById('simpleRecordType').value = type;
+    document.getElementById('simpleModalTitle').innerText = `添加${type}`;
+    document.getElementById('simpleRecordDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('simpleRecordContent').value = '';
+    document.getElementById('simpleRecordNote').value = '';
+    document.getElementById('simpleModal').style.display = 'flex';
+}
+
+function closeSimpleModal() {
+    document.getElementById('simpleModal').style.display = 'none';
+}
+
+// ==================== 表单提交 ====================
 document.getElementById('mealModalForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -204,49 +259,25 @@ document.getElementById('mealModalForm')?.addEventListener('submit', (e) => {
     showMessage('保存成功');
 });
 
-// ==================== 便便记录弹窗 ====================
-function openStoolModal() {
-    document.getElementById('stoolDate').value = new Date().toISOString().slice(0,10);
-    document.getElementById('stoolStatus').value = '正常';
-    document.getElementById('stoolNote').value = '';
-    document.getElementById('stoolModal').style.display = 'flex';
-}
-
-function closeStoolModal() {
-    document.getElementById('stoolModal').style.display = 'none';
-}
-
 document.getElementById('stoolForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const statusMap = { '正常': '✅ 正常', '软便': '⚠️ 软便', '腹泻': '🚨 腹泻', '偏干': '💧 偏干' };
+    const type = document.getElementById('stoolType').value;
+    const status = document.getElementById('stoolStatus').value;
     const newRecord = {
         id: Date.now(),
         date: document.getElementById('stoolDate').value,
-        status: document.getElementById('stoolStatus').value,
-        statusText: statusMap[document.getElementById('stoolStatus').value],
-        note: document.getElementById('stoolNote').value
+        time: document.getElementById('stoolTime').value,
+        type: type,
+        status: status,
+        statusText: type === '尿尿' ? `💧 ${status}` : `💩 ${status}`
     };
     stoolRecords.push(newRecord);
     saveAllData();
     closeStoolModal();
     renderAll();
-    showMessage('便便记录已保存');
+    showMessage('臭臭记录已保存');
 });
-
-// ==================== 大事记弹窗 ====================
-function openAddSimpleModal(type) {
-    document.getElementById('simpleRecordType').value = type;
-    document.getElementById('simpleModalTitle').innerText = `添加${type}`;
-    document.getElementById('simpleRecordDate').value = new Date().toISOString().slice(0,10);
-    document.getElementById('simpleRecordContent').value = '';
-    document.getElementById('simpleRecordNote').value = '';
-    document.getElementById('simpleModal').style.display = 'flex';
-}
-
-function closeSimpleModal() {
-    document.getElementById('simpleModal').style.display = 'none';
-}
 
 document.getElementById('simpleModalForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -267,6 +298,60 @@ document.getElementById('simpleModalForm')?.addEventListener('submit', (e) => {
     showMessage('保存成功');
 });
 
+document.getElementById('healthForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newEvent = {
+        id: Date.now(),
+        eventType: document.getElementById('healthType').value,
+        date: document.getElementById('healthDate').value,
+        title: document.getElementById('healthTitle').value,
+        institution: document.getElementById('healthInstitution').value,
+        contact: document.getElementById('healthContact').value,
+        nextDueDate: document.getElementById('healthNextDue').value,
+        cost: parseFloat(document.getElementById('healthCost').value) || 0,
+        note: document.getElementById('healthNote').value
+    };
+    healthEvents.push(newEvent);
+    saveAllData();
+    renderAll();
+    document.getElementById('healthForm').reset();
+    document.getElementById('healthDate').value = new Date().toISOString().slice(0,10);
+    showMessage('健康事件已保存');
+});
+
+document.getElementById('growthForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const date = document.getElementById('growthDate').value;
+    const weightVal = document.getElementById('growthWeight').value;
+    const lengthVal = document.getElementById('growthLength').value;
+    const note = document.getElementById('growthNote').value;
+    if (weightVal) weights.push({ id: Date.now(), date, value: parseFloat(weightVal), note });
+    if (lengthVal) lengths.push({ id: Date.now()+1, date, value: parseFloat(lengthVal), note });
+    saveAllData();
+    renderAll();
+    document.getElementById('growthForm').reset();
+    document.getElementById('growthDate').value = new Date().toISOString().slice(0,10);
+    showMessage('成长数据已保存');
+});
+
+document.getElementById('petInfoForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    petInfo = {
+        name: document.getElementById('petName').value,
+        birthday: document.getElementById('petBirthday').value,
+        birthplace: document.getElementById('petBirthplace').value,
+        arrivalDate: document.getElementById('petArrivalDate').value,
+        father: document.getElementById('petFather').value,
+        mother: document.getElementById('petMother').value
+    };
+    saveAllData();
+    renderAll();
+    showMessage('基础信息已保存');
+});
+
 // ==================== 渲染所有模块 ====================
 function renderAll() {
     renderTodayStats();
@@ -275,6 +360,12 @@ function renderAll() {
     renderRecentMilestones();
     renderAllMilestones();
     renderDietCalendar();
+    if (selectedDate) {
+        showDailySummary(selectedDate);
+    } else {
+        const today = new Date().toISOString().slice(0,10);
+        showDailySummary(today);
+    }
     renderDietRecordsList();
     renderHealthRecords();
     renderUpcomingReminders();
@@ -326,9 +417,8 @@ function renderTodayTimeline() {
     todayStools.forEach(s => {
         html += `<div class="timeline-item">
             <div style="flex:1">
-                <div class="timeline-meal">💩 便便</div>
-                <div class="timeline-detail">状态：${s.statusText}</div>
-                ${s.note ? `<div class="timeline-note">📌 ${s.note}</div>` : ''}
+                <div class="timeline-meal">${s.type === '尿尿' ? '💧' : '💩'} ${s.type} ${s.time}</div>
+                <div class="timeline-detail">状态：${s.status}</div>
             </div>
             <button class="delete-mini" onclick="deleteStoolRecord(${s.id})">🗑️</button>
         </div>`;
@@ -380,7 +470,7 @@ function renderRecentMilestones() {
 }
 
 function renderAllMilestones() {
-    const milestones = simpleRecords.filter(s => s.type === '大事记').sort((a,b) => new Date(b.date) - new Date(a.date));
+    const milestones = simpleRecords.filter(s => s.type === '大事记').sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,10);
     const container = document.getElementById('allMilestones');
     if (!container) return;
     if (milestones.length === 0) {
@@ -409,10 +499,17 @@ function renderDietCalendar() {
     for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const hasRecord = datesWithMeals.has(dateStr);
-        html += `<div class="calendar-day ${hasRecord ? 'has-record' : ''}" onclick="showDailySummary('${dateStr}')">${d}</div>`;
+        const isSelected = selectedDate === dateStr;
+        html += `<div class="calendar-day ${hasRecord ? 'has-record' : ''} ${isSelected ? 'selected' : ''}" onclick="selectDate('${dateStr}')">${d}</div>`;
     }
     html += '</div>';
     document.getElementById('dietCalendar').innerHTML = html;
+}
+
+function selectDate(date) {
+    selectedDate = date;
+    renderDietCalendar();
+    showDailySummary(date);
 }
 
 function showDailySummary(date) {
@@ -420,66 +517,60 @@ function showDailySummary(date) {
     const stools = stoolRecords.filter(s => s.date === date);
     
     if (meals.length === 0 && stools.length === 0) {
-        document.getElementById('dailySummaryContent').innerHTML = '<div class="empty-state">当日无饮食记录</div>';
-        document.getElementById('dailySummaryCard').style.display = 'block';
+        document.getElementById('dailySummaryContent').innerHTML = '<div class="empty-state">当日无记录</div>';
         return;
     }
     
     let totalWater = meals.reduce((sum, m) => sum + (m.water || 0), 0);
-    let html = `<div><strong>${date}</strong> 共 ${meals.length} 餐，总饮水 ${totalWater}ml</div>`;
-    meals.forEach(m => {
-        html += `<div style="margin-top:8px;padding:8px;background:#F9FAFB;border-radius:12px;">
-            <strong>${m.meal} ${m.time}</strong><br>
-            ${m.mainFood ? `主食：${m.mainFood} ${m.mainWeight}g<br>` : ''}
-            ${m.sideFood ? `辅食：${m.sideFood} ${m.sideWeight}g<br>` : ''}
-            ${m.water ? `饮水：${m.water}ml<br>` : ''}
-            ${m.note ? `📌 ${m.note}` : ''}
-        </div>`;
-    });
+    let html = `<div style="margin-bottom:12px;"><strong>${date}</strong> 共 ${meals.length} 餐，总饮水 ${totalWater}ml</div>`;
+    
+    if (meals.length > 0) {
+        html += `<div style="margin-bottom:12px;"><strong>🍖 饮食记录</strong></div>`;
+        meals.forEach(m => {
+            html += `<div style="margin-bottom:8px;padding:8px;background:#F9FAFB;border-radius:12px;font-size:13px;">
+                <strong>${m.meal} ${m.time}</strong><br>
+                ${m.mainFood ? `主食：${m.mainFood} ${m.mainWeight}g<br>` : ''}
+                ${m.sideFood ? `辅食：${m.sideFood} ${m.sideWeight}g<br>` : ''}
+                ${m.water ? `饮水：${m.water}ml<br>` : ''}
+                ${m.note ? `📌 ${m.note}` : ''}
+            </div>`;
+        });
+    }
+    
     if (stools.length > 0) {
-        html += `<div style="margin-top:8px;"><strong>💩 便便记录</strong></div>`;
+        html += `<div style="margin-top:12px;"><strong>💩 臭臭记录</strong></div>`;
         stools.forEach(s => {
-            html += `<div style="margin-top:4px;padding:8px;background:#F9FAFB;border-radius:12px;">
-                状态：${s.statusText} ${s.note ? `（${s.note}）` : ''}
+            html += `<div style="margin-bottom:4px;padding:6px 8px;background:#F9FAFB;border-radius:12px;font-size:13px;">
+                ${s.time} ${s.type === '尿尿' ? '💧' : '💩'} ${s.type}：${s.status}
             </div>`;
         });
     }
     document.getElementById('dailySummaryContent').innerHTML = html;
-    document.getElementById('dailySummaryCard').style.display = 'block';
 }
 
 function renderDietRecordsList() {
-    const sorted = [...mealRecords].sort((a,b) => new Date(b.date) - new Date(a.date));
+    const sorted = [...mealRecords].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,10);
     const container = document.getElementById('dietRecordsList');
     if (sorted.length === 0) {
         container.innerHTML = '<div class="empty-state">暂无饮食记录</div>';
         return;
     }
-    const grouped = {};
-    sorted.forEach(m => { grouped[m.date] = grouped[m.date] || []; grouped[m.date].push(m); });
-    
-    let html = '';
-    Object.keys(grouped).sort().reverse().forEach(date => {
-        html += `<div class="record-group"><div class="record-group-date" style="font-weight:600;margin:12px 0 8px;">📅 ${date}</div>`;
-        grouped[date].forEach(m => {
-            html += `<div class="record-item">
-                <div style="flex:1">
-                    <strong>${m.meal} ${m.time}</strong><br>
-                    ${m.mainFood ? `主食：${m.mainFood} ${m.mainWeight}g<br>` : ''}
-                    ${m.sideFood ? `辅食：${m.sideFood} ${m.sideWeight}g<br>` : ''}
-                    ${m.water ? `饮水：${m.water}ml<br>` : ''}
-                    ${m.note ? `<span class="timeline-note">📌 ${m.note}</span>` : ''}
-                </div>
-                <button class="delete-mini" onclick="deleteMealRecord(${m.id})">🗑️</button>
-            </div>`;
-        });
-        html += `</div>`;
-    });
-    container.innerHTML = html;
+    container.innerHTML = sorted.map(m => `
+        <div class="record-item">
+            <div style="flex:1">
+                <strong>${m.date} ${m.meal} ${m.time}</strong><br>
+                ${m.mainFood ? `主食：${m.mainFood} ${m.mainWeight}g<br>` : ''}
+                ${m.sideFood ? `辅食：${m.sideFood} ${m.sideWeight}g<br>` : ''}
+                ${m.water ? `饮水：${m.water}ml<br>` : ''}
+                ${m.note ? `<span class="timeline-note">📌 ${m.note}</span>` : ''}
+            </div>
+            <button class="delete-mini" onclick="deleteMealRecord(${m.id})">🗑️</button>
+        </div>
+    `).join('');
 }
 
 function renderHealthRecords() {
-    const sorted = [...healthEvents].sort((a,b) => new Date(b.date) - new Date(a.date));
+    const sorted = [...healthEvents].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,10);
     const container = document.getElementById('healthRecordsList');
     if (sorted.length === 0) {
         container.innerHTML = '<div class="empty-state">暂无健康记录</div>';
@@ -503,7 +594,8 @@ function renderUpcomingReminders() {
     const upcoming = healthEvents.filter(e => e.nextDueDate)
         .map(e => ({ ...e, daysLeft: Math.ceil((new Date(e.nextDueDate) - today) / (1000*60*60*24)) }))
         .filter(e => e.daysLeft >= 0 && e.daysLeft <= 60)
-        .sort((a,b) => a.daysLeft - b.daysLeft);
+        .sort((a,b) => a.daysLeft - b.daysLeft)
+        .slice(0,10);
     const container = document.getElementById('upcomingReminders');
     if (upcoming.length === 0) {
         container.innerHTML = '<div class="empty-state">暂无即将到来的提醒</div>';
@@ -522,12 +614,13 @@ function renderGrowthRecords() {
     weights.forEach(w => { growthList.push({ date: w.date, type: '体重', value: w.value, note: w.note, id: w.id }); });
     lengths.forEach(l => { growthList.push({ date: l.date, type: '体长', value: l.value, note: l.note, id: l.id }); });
     growthList.sort((a,b) => new Date(b.date) - new Date(a.date));
+    const recentGrowth = growthList.slice(0,10);
     const container = document.getElementById('growthRecordsList');
-    if (growthList.length === 0) {
+    if (recentGrowth.length === 0) {
         container.innerHTML = '<div class="empty-state">暂无成长记录</div>';
         return;
     }
-    container.innerHTML = growthList.map(g => `
+    container.innerHTML = recentGrowth.map(g => `
         <div class="record-item">
             <span>${g.date} ${g.type}: ${g.value}${g.type === '体重' ? 'kg' : 'cm'}</span>
             ${g.note ? `<span class="timeline-note">📌 ${g.note}</span>` : ''}
@@ -630,7 +723,7 @@ function deleteMealRecord(id) {
 }
 
 function deleteStoolRecord(id) {
-    if (confirm('删除这条便便记录？')) {
+    if (confirm('删除这条臭臭记录？')) {
         stoolRecords = stoolRecords.filter(s => s.id !== id);
         saveAllData();
         renderAll();
@@ -670,7 +763,7 @@ function searchDietRecords() {
         m.mainFood.toLowerCase().includes(keyword) ||
         m.sideFood.toLowerCase().includes(keyword) ||
         m.note.toLowerCase().includes(keyword)
-    );
+    ).slice(0,10);
     const container = document.getElementById('dietSearchResults');
     if (results.length === 0) {
         container.innerHTML = '<div class="empty-state">未找到相关饮食记录</div>';
@@ -686,11 +779,13 @@ function searchDietRecords() {
         </div>
     `).join('');
 }
+
 function clearDietSearch() {
     document.getElementById('dietSearchInput').value = '';
     document.getElementById('dietSearchResults').innerHTML = '';
     renderDietRecordsList();
 }
+
 function searchTaboo() {
     const keyword = document.getElementById('tabooSearchInput').value.toLowerCase();
     if (!keyword.trim()) { renderTabooLists(); return; }
@@ -708,66 +803,12 @@ function searchTaboo() {
     if (!absoluteResults.length && !cautiousResults.length) html = '<div class="empty-state">未找到相关食物信息</div>';
     document.getElementById('tabooSearchResults').innerHTML = html;
 }
+
 function resetTabooSearch() {
     document.getElementById('tabooSearchInput').value = '';
     document.getElementById('tabooSearchResults').innerHTML = '';
     renderTabooLists();
 }
-
-// ==================== 表单提交 ====================
-document.getElementById('healthForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const newEvent = {
-        id: Date.now(),
-        eventType: document.getElementById('healthType').value,
-        date: document.getElementById('healthDate').value,
-        title: document.getElementById('healthTitle').value,
-        institution: document.getElementById('healthInstitution').value,
-        contact: document.getElementById('healthContact').value,
-        nextDueDate: document.getElementById('healthNextDue').value,
-        cost: parseFloat(document.getElementById('healthCost').value) || 0,
-        note: document.getElementById('healthNote').value
-    };
-    healthEvents.push(newEvent);
-    saveAllData();
-    renderAll();
-    document.getElementById('healthForm').reset();
-    document.getElementById('healthDate').value = new Date().toISOString().slice(0,10);
-    showMessage('健康事件已保存');
-});
-
-document.getElementById('growthForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const date = document.getElementById('growthDate').value;
-    const weightVal = document.getElementById('growthWeight').value;
-    const lengthVal = document.getElementById('growthLength').value;
-    const note = document.getElementById('growthNote').value;
-    if (weightVal) weights.push({ id: Date.now(), date, value: parseFloat(weightVal), note });
-    if (lengthVal) lengths.push({ id: Date.now()+1, date, value: parseFloat(lengthVal), note });
-    saveAllData();
-    renderAll();
-    document.getElementById('growthForm').reset();
-    document.getElementById('growthDate').value = new Date().toISOString().slice(0,10);
-    showMessage('成长数据已保存');
-});
-
-document.getElementById('petInfoForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    petInfo = {
-        name: document.getElementById('petName').value,
-        birthday: document.getElementById('petBirthday').value,
-        birthplace: document.getElementById('petBirthplace').value,
-        arrivalDate: document.getElementById('petArrivalDate').value,
-        father: document.getElementById('petFather').value,
-        mother: document.getElementById('petMother').value
-    };
-    saveAllData();
-    renderAll();
-    showMessage('基础信息已保存');
-});
 
 // ==================== 备份功能 ====================
 function exportBackup() {
@@ -778,7 +819,9 @@ function exportBackup() {
     link.download = `wheat-backup-${new Date().toISOString().slice(0,10)}.json`;
     link.click();
 }
+
 function triggerImport() { document.getElementById('importFile').click(); }
+
 function importBackup(input) {
     const file = input.files[0];
     if (!file) return;
@@ -802,6 +845,7 @@ function importBackup(input) {
     reader.readAsText(file);
     input.value = '';
 }
+
 function clearAllData() {
     if (confirm('⚠️ 确定清空所有数据？不可恢复！')) {
         mealRecords = []; stoolRecords = []; simpleRecords = []; weights = []; lengths = []; healthEvents = []; petInfo = {};
@@ -821,7 +865,5 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         const tabId = `tab-${btn.dataset.tab}`;
         document.getElementById(tabId)?.classList.add('active');
         if (btn.dataset.tab === 'growth') setTimeout(() => { renderWeightChart(); renderLengthChart(); }, 100);
-        const summaryCard = document.getElementById('dailySummaryCard');
-        if (summaryCard) summaryCard.style.display = 'none';
     });
 });

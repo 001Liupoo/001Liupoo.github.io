@@ -7,7 +7,6 @@
     <meta name="theme-color" content="#E11D48">
     <title>🐕 小麦成长日记</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Chart.js 用于绘制曲线图 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -25,7 +24,6 @@
 
     <!-- 主界面 -->
     <div id="mainApp" style="display: none;">
-        <!-- 顶部栏 -->
         <div class="top-bar">
             <h1>🐕 小麦成长日记</h1>
             <div class="top-actions">
@@ -34,7 +32,6 @@
             </div>
         </div>
 
-        <!-- Tab 导航栏 -->
         <div class="tab-bar">
             <button class="tab-btn active" data-tab="today">🏠 今日</button>
             <button class="tab-btn" data-tab="diet">🍖 饮食</button>
@@ -44,10 +41,9 @@
             <button class="tab-btn" data-tab="settings">⚙️ 设置</button>
         </div>
 
-        <!-- ==================== Tab 1：今日（完全重做，美观+引导） ==================== -->
+        <!-- ==================== Tab 1：今日 ==================== -->
         <div id="tab-today" class="tab-content active">
             <div class="container">
-                <!-- 欢迎卡片 -->
                 <div class="welcome-card">
                     <div class="welcome-text">
                         <h2>🐕 欢迎回来！</h2>
@@ -55,7 +51,6 @@
                     </div>
                 </div>
 
-                <!-- 本周统计卡片 -->
                 <div class="stats-grid" id="weekStats">
                     <div class="stat-card">
                         <div class="stat-number" id="statMeals">0</div>
@@ -71,7 +66,6 @@
                     </div>
                 </div>
 
-                <!-- 快速入口（大按钮） -->
                 <div class="quick-entry">
                     <button class="quick-btn-large" onclick="openAddMealModal('早餐')">🍖 早餐</button>
                     <button class="quick-btn-large" onclick="openAddMealModal('午餐')">🍗 午餐</button>
@@ -82,19 +76,16 @@
                     <button class="quick-btn-large" onclick="openAddSimpleModal('大事记')">📝 大事记</button>
                 </div>
 
-                <!-- 今日提醒 -->
                 <div class="reminder-card">
                     <h3>🔔 今日提醒</h3>
                     <div id="todayReminders" class="reminder-list"></div>
                 </div>
 
-                <!-- 今日时间线（按餐次分组显示） -->
                 <div class="timeline-card">
                     <h3>📋 今日时间线</h3>
                     <div id="todayTimeline" class="timeline-list"></div>
                 </div>
 
-                <!-- 最近大事记 -->
                 <div class="milestone-card">
                     <h3>❤️ 最近大事记</h3>
                     <div id="recentMilestones" class="milestone-list"></div>
@@ -102,10 +93,9 @@
             </div>
         </div>
 
-        <!-- ==================== Tab 2：饮食（增加搜索功能） ==================== -->
+        <!-- ==================== Tab 2：饮食 ==================== -->
         <div id="tab-diet" class="tab-content">
             <div class="container">
-                <!-- 搜索区域 -->
                 <div class="search-card">
                     <h3>🔍 搜索饮食记录</h3>
                     <div class="search-box">
@@ -116,7 +106,6 @@
                     <div id="dietSearchResults" class="search-results"></div>
                 </div>
 
-                <!-- 添加饮食记录（完整餐次） -->
                 <div class="form-card">
                     <h3>➕ 添加餐次记录</h3>
                     <form id="mealForm">
@@ -159,13 +148,16 @@
                     </form>
                 </div>
 
-                <!-- 饮食日历简表 -->
+                <!-- 饮食日历 + 右侧小计 -->
                 <div class="calendar-card">
                     <h3>📅 饮食日历</h3>
                     <div id="dietCalendar" class="calendar-mini"></div>
                 </div>
+                <div class="daily-summary-card" id="dailySummaryCard" style="display:none;">
+                    <h3>📊 当日饮食小计</h3>
+                    <div id="dailySummaryContent"></div>
+                </div>
 
-                <!-- 饮食记录列表（按餐次分组） -->
                 <div class="records-card">
                     <h3>📋 饮食记录列表</h3>
                     <div id="dietRecordsList" class="records-list"></div>
@@ -173,7 +165,7 @@
             </div>
         </div>
 
-        <!-- ==================== Tab 3：健康（保持不变，微调样式） ==================== -->
+        <!-- ==================== Tab 3：健康 ==================== -->
         <div id="tab-health" class="tab-content">
             <div class="container">
                 <div class="form-card">
@@ -194,7 +186,7 @@
                             <input type="date" id="healthDate" required>
                         </div>
                         <div class="form-row">
-                            <label>标题：</label>
+                            <label>内容：</label>
                             <input type="text" id="healthTitle" placeholder="例如：卫佳伍第一针" required>
                         </div>
                         <div class="form-row">
@@ -234,7 +226,6 @@
                 <div class="info-card">
                     <h3>🏥 医保信息</h3>
                     <div id="insuranceInfo" class="insurance-content"></div>
-                    <button class="btn-secondary" onclick="editInsurance()">编辑</button>
                 </div>
             </div>
         </div>
@@ -265,6 +256,11 @@
                     </form>
                 </div>
 
+                <div class="milestone-card">
+                    <h3>❤️ 大事记专区</h3>
+                    <div id="allMilestones" class="milestone-list"></div>
+                </div>
+
                 <div class="chart-card">
                     <h3>📊 体重曲线图</h3>
                     <canvas id="weightChart" width="400" height="200"></canvas>
@@ -282,7 +278,7 @@
             </div>
         </div>
 
-        <!-- ==================== Tab 5：知识（增加搜索功能） ==================== -->
+        <!-- ==================== Tab 5：知识 ==================== -->
         <div id="tab-knowledge" class="tab-content">
             <div class="container">
                 <div class="search-card">
@@ -382,7 +378,7 @@
         </div>
     </div>
 
-    <!-- 餐次记录弹窗（快速添加） -->
+    <!-- 餐次记录弹窗 -->
     <div id="mealModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeMealModal()">&times;</span>
@@ -420,7 +416,7 @@
         </div>
     </div>
 
-    <!-- 简单记录弹窗（饮水/便便/大事记） -->
+    <!-- 简单记录弹窗 -->
     <div id="simpleModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeSimpleModal()">&times;</span>
@@ -438,49 +434,6 @@
                 <div class="form-row">
                     <label>备注：</label>
                     <input type="text" id="simpleRecordNote" placeholder="可选">
-                </div>
-                <button type="submit" class="btn-primary">💾 保存</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- 医保编辑弹窗 -->
-    <div id="insuranceModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeInsuranceModal()">&times;</span>
-            <h3>🏥 编辑医保信息</h3>
-            <form id="insuranceForm">
-                <div class="form-row">
-                    <label>险种：</label>
-                    <input type="text" id="insPlanName">
-                </div>
-                <div class="form-row">
-                    <label>机构：</label>
-                    <input type="text" id="insProvider">
-                </div>
-                <div class="form-row">
-                    <label>保费：</label>
-                    <input type="text" id="insPremium">
-                </div>
-                <div class="form-row">
-                    <label>保险期：</label>
-                    <input type="text" id="insPeriod">
-                </div>
-                <div class="form-row">
-                    <label>理赔限额：</label>
-                    <textarea id="insCoverage" rows="2"></textarea>
-                </div>
-                <div class="form-row">
-                    <label>理赔渠道：</label>
-                    <input type="text" id="insChannel">
-                </div>
-                <div class="form-row">
-                    <label>赠送权益：</label>
-                    <textarea id="insBonus" rows="2"></textarea>
-                </div>
-                <div class="form-row">
-                    <label>咨询电话：</label>
-                    <input type="text" id="insHotline">
                 </div>
                 <button type="submit" class="btn-primary">💾 保存</button>
             </form>

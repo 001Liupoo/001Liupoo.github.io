@@ -344,37 +344,37 @@
         </div>
     </div>
 
-    <!-- 臭臭记录弹窗 -->
-    <div id="stoolModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeStoolModal()">&times;</span>
-            <h3>💩 记录臭臭</h3>
-            <form id="stoolForm">
-                <div class="form-row">
-                    <label>日期：</label>
-                    <input type="date" id="stoolDate" required>
-                </div>
-                <div class="form-row">
-                    <label>时间：</label>
-                    <input type="time" id="stoolTime" value="12:00" required>
-                </div>
-                <div class="form-row">
-                    <label>类别：</label>
-                    <select id="stoolType" required>
-                        <option value="尿尿">💧 尿尿</option>
-                        <option value="便便">💩 便便</option>
-                    </select>
-                </div>
-                <div class="form-row" id="stoolStatusRow">
-                    <label>状态：</label>
-                    <select id="stoolStatus" required>
-                        <!-- 动态填充 -->
-                    </select>
-                </div>
-                <button type="submit" class="btn-primary">💾 保存</button>
-            </form>
-        </div>
+<!-- 臭臭记录弹窗 -->
+<div id="stoolModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeStoolModal()">&times;</span>
+        <h3>💩 记录臭臭</h3>
+        <form id="stoolForm">
+            <div class="form-row">
+                <label>日期：</label>
+                <input type="date" id="stoolDate" required>
+            </div>
+            <div class="form-row">
+                <label>时间：</label>
+                <input type="time" id="stoolTime" value="12:00" required>
+            </div>
+            <div class="form-row">
+                <label>类别：</label>
+                <select id="stoolType" required onchange="updateStoolStatusOptions()">
+                    <option value="尿尿">💧 尿尿</option>
+                    <option value="便便">💩 便便</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label>状态：</label>
+                <select id="stoolStatus" required>
+                    <option value="正常（成型）">正常（成型）</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">💾 保存</button>
+        </form>
     </div>
+</div>
 
     <!-- 大事记弹窗 -->
     <div id="simpleModal" class="modal">

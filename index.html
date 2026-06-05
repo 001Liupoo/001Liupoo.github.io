@@ -7,27 +7,15 @@
     <meta name="theme-color" content="#E11D48">
     <title>🐕 小麦成长日记</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Chart.js 用于绘制曲线图 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-    <!-- 密码锁界面 -->
-    <div id="lockScreen" class="lock-screen">
-        <div class="lock-box">
-            <div class="lock-icon">🐕</div>
-            <h2>小麦成长日记</h2>
-            <p>请输入访问密码</p>
-            <input type="password" id="passwordInput" placeholder="密码" autocomplete="off">
-            <button onclick="checkPassword()">解锁</button>
-            <div id="lockError" class="lock-error"></div>
-        </div>
-    </div>
-
-    <!-- 主界面 -->
-    <div id="mainApp" style="display: none;">
+    <!-- 主界面（直接显示，无密码锁） -->
+    <div id="mainApp">
         <div class="top-bar">
             <h1>🐕 小麦成长日记</h1>
             <div class="top-actions">
-                <button class="icon-btn" onclick="showLockScreen()" title="锁定">🔐</button>
                 <button class="icon-btn" onclick="exportBackup()" title="备份">📁</button>
             </div>
         </div>
@@ -86,7 +74,7 @@
             </div>
         </div>
 
-        <!-- ==================== Tab 2：饮食（左右分栏） ==================== -->
+        <!-- ==================== Tab 2：饮食 ==================== -->
         <div id="tab-diet" class="tab-content">
             <div class="container">
                 <div class="search-card">
@@ -305,23 +293,6 @@
                 </div>
 
                 <div class="form-card">
-                    <h3>🔐 修改密码</h3>
-                    <div class="form-row">
-                        <label>当前密码：</label>
-                        <input type="password" id="oldPassword">
-                    </div>
-                    <div class="form-row">
-                        <label>新密码：</label>
-                        <input type="password" id="newPassword">
-                    </div>
-                    <div class="form-row">
-                        <label>确认新密码：</label>
-                        <input type="password" id="confirmPassword">
-                    </div>
-                    <button class="btn-primary" onclick="changePassword()">修改密码</button>
-                </div>
-
-                <div class="form-card">
                     <h3>📁 数据管理</h3>
                     <div class="data-stats">📊 当前数据量：<span id="dataStats">计算中...</span></div>
                     <div class="button-group">
@@ -353,12 +324,12 @@
                 <div class="form-row">
                     <label>主食：</label>
                     <input type="text" id="modalMainFood" placeholder="狗粮">
-                    <input type="number" id="modalMainWeight" placeholder="克重" style="width:100px">
+                    <input type="number" id="modalMainWeight" step="0.1" placeholder="克重" style="width:100px">
                 </div>
                 <div class="form-row">
                     <label>辅食：</label>
                     <input type="text" id="modalSideFood" placeholder="鸡胸肉">
-                    <input type="number" id="modalSideWeight" placeholder="克重" style="width:100px">
+                    <input type="number" id="modalSideWeight" step="0.1" placeholder="克重" style="width:100px">
                 </div>
                 <div class="form-row">
                     <label>饮水：</label>
@@ -373,7 +344,7 @@
         </div>
     </div>
 
-    <!-- 臭臭记录弹窗（尿尿/便便） -->
+    <!-- 臭臭记录弹窗 -->
     <div id="stoolModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeStoolModal()">&times;</span>

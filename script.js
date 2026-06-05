@@ -1,6 +1,6 @@
 // ==================== 全局变量 ====================
 let mealRecords = [];
-let stoolRecords = [];      // 臭臭记录（尿尿/便便）
+let stoolRecords = [];
 let simpleRecords = [];
 let weights = [];
 let lengths = [];
@@ -10,7 +10,6 @@ let insurance = {};
 
 let weightChart = null;
 let lengthChart = null;
-let currentPassword = localStorage.getItem('petPassword') || '1234';
 let selectedDate = null;
 
 // ==================== 饮食禁忌知识库 ====================
@@ -65,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCurrentDate();
     refreshTip();
     
-    // 监听类别变化，动态更新状态选项
     const stoolTypeSelect = document.getElementById('stoolType');
     if (stoolTypeSelect) {
         stoolTypeSelect.addEventListener('change', updateStoolStatusOptions);
@@ -105,41 +103,6 @@ function getDefaultInsurance() {
         bonus: "体外驱虫药（邮寄）1支、宠物联苗1支、免费宠物医师咨询4008299958",
         hotline: "400-829-9958"
     };
-}
-
-// ==================== 密码锁 ====================
-function checkPassword() {
-    const input = document.getElementById('passwordInput').value;
-    if (input === currentPassword) {
-        document.getElementById('lockScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('lockError').innerText = '';
-    } else {
-        document.getElementById('lockError').innerText = '密码错误';
-    }
-}
-
-function showLockScreen() {
-    document.getElementById('lockScreen').style.display = 'flex';
-    document.getElementById('mainApp').style.display = 'none';
-    document.getElementById('passwordInput').value = '';
-}
-
-function changePassword() {
-    const oldPwd = document.getElementById('oldPassword').value;
-    const newPwd = document.getElementById('newPassword').value;
-    const confirmPwd = document.getElementById('confirmPassword').value;
-    
-    if (oldPwd !== currentPassword) { alert('当前密码错误'); return; }
-    if (newPwd !== confirmPwd) { alert('两次密码不一致'); return; }
-    if (newPwd.length < 4) { alert('密码至少4位'); return; }
-    
-    currentPassword = newPwd;
-    localStorage.setItem('petPassword', newPwd);
-    alert('密码修改成功');
-    document.getElementById('oldPassword').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
 }
 
 // ==================== 辅助函数 ====================
@@ -242,9 +205,9 @@ document.getElementById('mealModalForm')?.addEventListener('submit', (e) => {
         meal: document.getElementById('modalMealType').value,
         time: document.getElementById('modalMealTime').value,
         mainFood: document.getElementById('modalMainFood').value,
-        mainWeight: parseInt(document.getElementById('modalMainWeight').value) || 0,
+        mainWeight: parseFloat(document.getElementById('modalMainWeight').value) || 0,
         sideFood: document.getElementById('modalSideFood').value,
-        sideWeight: parseInt(document.getElementById('modalSideWeight').value) || 0,
+        sideWeight: parseFloat(document.getElementById('modalSideWeight').value) || 0,
         water: parseInt(document.getElementById('modalWaterAmount').value) || 0,
         note: document.getElementById('modalMealNote').value
     };
